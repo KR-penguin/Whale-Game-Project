@@ -19,8 +19,7 @@ Clock = pygame.time.Clock()  # fps 설정을 위한 Clock 변수 설정
 SceneValue = 0  # 장면 값
 
 # --- 이미지 불러오기 ---
-BasicImagePath = os.path.abspath(
-  '.') + '/' + "sources/images/"  # image 기본 경로 설정
+BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 PlayerImage = pygame.image.load(BasicImagePath + "test.png")
 
 # --- classes ---
@@ -50,7 +49,7 @@ class StaticObject(Object):
 
 class Character(DynamicObject):
 
-  def __init__(self, Image, Xpos, Ypos, Speed):
+  def __init__(self, Image, Xpos, Ypos, Speed, FrictionalForce):
     # 상속된 변수들
     self.Size = Image.get_rect().size
     self.Width = self.Size[0]
@@ -60,7 +59,8 @@ class Character(DynamicObject):
     # 이 class에서 새로 선언된 변수들
     self.ToXpos = 0
     self.ToYpos = 0
-    self.speed = Speed
+    self.Speed = Speed
+    self.FrictionalForce = FrictionalForce
 
 
 class Background(DynamicObject):
@@ -91,40 +91,41 @@ class VirtualJoystick(HUD):
 
 # --- create instance ---
 
-Player = Character(PlayerImage, 0, 0, 0.3)
+Player = Character(PlayerImage, 0, 0, 3, 0.8)
 
 # --- begin setup ---
 
 Running = True
+Player.Xpos = ScreenWidth / 2 - Player.Width / 2
+Player.Ypos = ScreenHeight / 2 - Player.Height / 2
 
 # --- main loop ---
+pygame.key.set_repeat(60)
 
 while Running:
-  for event in pygame.event.get():
-    if event.type == QUIT:
-      Running = False
 
-    # --- Key binding ---
+    DeltaTime = Clock.tick(60)
+    Player.Xpos += Player.ToXpos
+    Player.Ypos += (-1 * Player.ToYpos)
+    Player.ToXpos *= Player.FrictionalForce
+    Player.ToYpos *= Player.FrictionalForce
 
-    # Key가 눌러졌는가?
-    if event.type == pygame.KEYDOWN:
+    for event in pygame.event.get():
+      if event.type == QUIT:
+        Running = False
 
-      # 좌우 Movement 키바인딩
-      if event.key == pygame.K_d:
-        Player.ToXpos += Player.speed
-      elif event.key == pygame.K_a:
-        Player.ToXpos -= Player.speed
-      # 상하 Movement 키바인딩
-      elif event.key == pygame.K_w:
-        Player.ToYpos += Player.speed
-      elif event.key == pygame.K_s:
-        Player.ToYpos -= Player.speed
+      # --- Key binding ---
 
-  # --- draw objects on screen ---
+      keys = pygame.key.get_pressed()  # 눌려진 키의 상태를 모두 가져옵니다.
+      if keys[pygame.K_d]:  # 'd' 키가 눌려진 경우
+        Player.ToXpos += Player.Speed
+      if keys[pygame.K_a]:  # 'a' 키가 눌려진 경우
+        Player.ToXpos -= Player.Speed
 
-  Screen.fill((255, 255, 255))
-  Screen.blit(PlayerImage, (0, 0))
+    # --- draw objects on screen ---
+    Screen.fill((255, 255, 255))
+    Screen.blit(PlayerImage, (Player.Xpos, Player.Ypos))
 
-  pygame.display.update()
+    pygame.display.update()
 
 pygame.quit()
