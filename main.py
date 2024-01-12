@@ -8,9 +8,9 @@ pygame.init()
 
 # --- 화면 설정 ---
 
-Screen = pygame.display.set_mode((1920, 1080))  # 화면 크기
 ScreenWidth = 1920
 ScreenHeight = 1080
+Screen = pygame.display.set_mode((ScreenWidth, ScreenHeight))
 
 pygame.display.set_caption("Whale")  # 게임 제목 설정
 
@@ -91,7 +91,7 @@ class VirtualJoystick(HUD):
 
 # --- create instance ---
 
-Player = Character(PlayerImage, 0, 0, 3, 0.8)
+Player = Character(PlayerImage, 0, 0, 1, 0.8)
 
 # --- begin setup ---
 
@@ -100,13 +100,13 @@ Player.Xpos = ScreenWidth / 2 - Player.Width / 2
 Player.Ypos = ScreenHeight / 2 - Player.Height / 2
 
 # --- main loop ---
-pygame.key.set_repeat(60)
+pygame.key.set_repeat(10)
 
 while Running:
 
     DeltaTime = Clock.tick(60)
-    Player.Xpos += Player.ToXpos
-    Player.Ypos += (-1 * Player.ToYpos)
+    Player.Xpos += Player.ToXpos * DeltaTime
+    Player.Ypos += (-1 * Player.ToYpos) * DeltaTime
     Player.ToXpos *= Player.FrictionalForce
     Player.ToYpos *= Player.FrictionalForce
 
@@ -118,9 +118,9 @@ while Running:
 
       keys = pygame.key.get_pressed()  # 눌려진 키의 상태를 모두 가져옵니다.
       if keys[pygame.K_d]:  # 'd' 키가 눌려진 경우
-        Player.ToXpos += Player.Speed
+        Player.ToXpos = Player.Speed
       if keys[pygame.K_a]:  # 'a' 키가 눌려진 경우
-        Player.ToXpos -= Player.Speed
+        Player.ToXpos = -1 * Player.Speed
 
     # --- draw objects on screen ---
     Screen.fill((255, 255, 255))
