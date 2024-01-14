@@ -8,9 +8,9 @@ pygame.init()
 
 # --- 화면 설정 ---
 
-ScreenWidth = 1920
-ScreenHeight = 1080
-Screen = pygame.display.set_mode((ScreenWidth, ScreenHeight))
+Screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+ScreenWidth = Screen.get_width()
+ScreenHeight = Screen.get_height()
 
 pygame.display.set_caption("Whale")  # 게임 제목 설정
 
@@ -22,17 +22,17 @@ SceneValue = 0  # 장면 값
 BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 
 PlayerImage = pygame.image.load(BasicImagePath + "test_player.png")
-PlayerImage = pygame.transform.scale(PlayerImage, (100, 100))
+PlayerImage = pygame.transform.scale(PlayerImage, (ScreenHeight / 10, ScreenHeight / 10))
 
 BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg")
-BackgroundImage = pygame.transform.scale(BackgroundImage, (3060, 1835))
+BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth * 3, ScreenHeight * 3))
 
 LeftMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png")
-LeftMoveButtonImage = pygame.transform.scale(LeftMoveButtonImage, (400, 400))
+LeftMoveButtonImage = pygame.transform.scale(LeftMoveButtonImage, (ScreenHeight / 3, ScreenHeight / 3))
 LeftMoveButtonImage = pygame.transform.rotate(LeftMoveButtonImage, 180.0)
 
 RightMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png")
-RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (400, 400))
+RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (ScreenHeight / 3, ScreenHeight / 3))
 
 # --- classes ---
 
@@ -181,11 +181,11 @@ Running = True
 Player.Xpos = ScreenWidth / 2 - Player.Width / 2
 Player.Ypos = ScreenHeight / 2 - Player.Height / 2
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Width / 2
-GameBackground.Ypos = ScreenHeight - GameBackground.Height
-LeftMoveButton.Xpos = 100
-LeftMoveButton.Ypos = ScreenHeight - LeftMoveButton.Height - 100
-RightMoveButton.Xpos = ScreenWidth - RightMoveButton.Width - 100
-RightMoveButton.Ypos = ScreenHeight - RightMoveButton.Height - 100
+GameBackground.Ypos = ScreenHeight - GameBackground.Height + ScreenHeight / 8
+LeftMoveButton.Xpos = 0
+LeftMoveButton.Ypos = ScreenHeight - LeftMoveButton.Height
+RightMoveButton.Xpos = ScreenWidth - RightMoveButton.Width
+RightMoveButton.Ypos = ScreenHeight - RightMoveButton.Height
 LeftMoveButton.update_rect_info()
 RightMoveButton.update_rect_info()
 MouseCursor = MouseInfo()
