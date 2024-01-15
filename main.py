@@ -134,7 +134,7 @@ def RightMove():
     global Player
     global ScreenWidth
 
-    if (GameBackground.Rect.right <= ScreenWidth + 15): # 배경이 오른쪽 끝에 다다름. (15 더해주는 이유는 pygame의 성능때문)
+    if (GameBackground.Rect.right <= ScreenWidth + 30): # 배경이 오른쪽 끝에 다다름. (30 더해주는 이유는 pygame의 성능때문)
         GameBackground.bMove = False
         Player.bMove = True
         Player.ToXpos = Player.Speed
@@ -154,7 +154,7 @@ def LeftMove():
     global Player
     global ScreenWidth
 
-    if (GameBackground.Rect.left >= -15): # 배경이 왼쪽 끝에 다다름. (15 빼주는 이유는 pygame의 성능때문)
+    if (GameBackground.Rect.left >= -30): # 배경이 왼쪽 끝에 다다름. (30 빼주는 이유는 pygame의 성능때문)
         GameBackground.bMove = False
         Player.bMove = True
         Player.ToXpos = -1 * Player.Speed
