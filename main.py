@@ -135,18 +135,22 @@ def RightMove():
     global ScreenWidth
 
     if (GameBackground.Rect.right <= ScreenWidth + 30): # 배경이 오른쪽 끝에 다다름. (30 더해주는 이유는 pygame의 성능때문)
-        GameBackground.bMove = False
-        Player.bMove = True
-        Player.ToXpos = Player.Speed
+        if (Player.Rect.right >= ScreenWidth): # Player가 오른쪽 화면 끝에 다달았는가?
+            GameBackground.bMove = False
+            Player.bMove = False
+        else:
+          GameBackground.bMove = False
+          Player.bMove = True
+          Player.ToXpos = Player.Speed
     else:
         if (Player.Xpos + Player.Width / 2 >= ScreenWidth / 2): # Player가 화면 중앙보다 오른쪽에 있는가?
             GameBackground.bMove = True
             Player.bMove = False
             GameBackground.ToXpos = -1 * Player.Speed # 배경은 Player의 반대로 이동해야 함.
         else:
-            GameBackground.bMove = False
-            Player.bMove = True
-            Player.ToXpos = Player.Speed
+              GameBackground.bMove = False
+              Player.bMove = True
+              Player.ToXpos = Player.Speed
 
 def LeftMove():
 
@@ -155,18 +159,22 @@ def LeftMove():
     global ScreenWidth
 
     if (GameBackground.Rect.left >= -30): # 배경이 왼쪽 끝에 다다름. (30 빼주는 이유는 pygame의 성능때문)
-        GameBackground.bMove = False
-        Player.bMove = True
-        Player.ToXpos = -1 * Player.Speed
+        if (Player.Xpos <= 0): # Player가 왼쪽 화면 끝에 다달았는가?
+          GameBackground.bMove = False
+          Player.bMove = False
+        else:        
+          GameBackground.bMove = False
+          Player.bMove = True
+          Player.ToXpos = -1 * Player.Speed
     else:
         if (Player.Xpos + Player.Width / 2 <= ScreenWidth / 2): # Player가 화면 중앙보다 왼쪽에 있는가?   
           GameBackground.bMove = True
           Player.bMove = False
           GameBackground.ToXpos = Player.Speed
         else:
-          GameBackground.bMove = False
-          Player.bMove = True
-          Player.ToXpos = -1 * Player.Speed # 배경은 Player의 반대로 이동해야 함.
+            GameBackground.bMove = False
+            Player.bMove = True
+            Player.ToXpos = -1 * Player.Speed # 배경은 Player의 반대로 이동해야 함.
 
 # --- create instance ---
 
