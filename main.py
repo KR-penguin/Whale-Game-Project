@@ -34,6 +34,9 @@ LeftMoveButtonImage = pygame.transform.rotate(LeftMoveButtonImage, 180.0)
 RightMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png")
 RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (ScreenHeight / 3, ScreenHeight / 3))
 
+JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png")
+JumpBlockImage = pygame.transform.scale(JumpBlockImage, (ScreenHeight / 3, ScreenHeight / 3))
+
 # --- classes ---
 
 
@@ -71,6 +74,13 @@ class DynamicObject(Object):
     self.Rect.right = self.Xpos - self.Width
     self.Rect.left = self.Xpos
 
+  def update_movement(self, FrictionalForce):
+    global DeltaTime
+    self.Xpos += self.ToXpos * DeltaTime
+    self.Ypos += (-1 * self.ToYpos) * DeltaTime
+    self.ToXpos *= FrictionalForce
+    self.ToYpos *= FrictionalForce
+
 
 class StaticObject(Object):
   def __init__(self, Image, Xpos, Ypos):
@@ -106,11 +116,7 @@ class Background(DynamicObject):
     super().update_rect_info()
 
   def update_movement(self, FrictionalForce):
-    global DeltaTime
-    self.Xpos += self.ToXpos * DeltaTime
-    self.Ypos += (-1 * self.ToYpos) * DeltaTime
-    self.ToXpos *= FrictionalForce
-    self.ToYpos *= FrictionalForce
+    super().update_movement(FrictionalForce)
 
 class Button(HUD):
 
@@ -128,7 +134,7 @@ class Button(HUD):
 
 # --- functions ---
 
-def RightMove():
+def right_move():
     
     global GameBackground
     global Player
@@ -141,18 +147,19 @@ def RightMove():
         else:
           GameBackground.bMove = False
           Player.bMove = True
-          Player.ToXpos = Player.Speed
+          Player.ToXpos = Player.Speed # Player가 오른쪽으로 이동함
     else:
         if (Player.Xpos + Player.Width / 2 >= ScreenWidth / 2): # Player가 화면 중앙보다 오른쪽에 있는가?
             GameBackground.bMove = True
             Player.bMove = False
-            GameBackground.ToXpos = -1 * Player.Speed # 배경은 Player의 반대로 이동해야 함.
+            background_move("Left") # 배경이 왼쪽으로 이동함
         else:
               GameBackground.bMove = False
               Player.bMove = True
-              Player.ToXpos = Player.Speed
+              Player.ToXpos = Player.Speed # Player가 오른쪽으로 이동함
 
-def LeftMove():
+
+def left_move():
 
     global GameBackground
     global Player
@@ -165,16 +172,32 @@ def LeftMove():
         else:        
           GameBackground.bMove = False
           Player.bMove = True
-          Player.ToXpos = -1 * Player.Speed
+          Player.ToXpos = -1 * Player.Speed # Player가 왼쪽으로 이동함
     else:
         if (Player.Xpos + Player.Width / 2 <= ScreenWidth / 2): # Player가 화면 중앙보다 왼쪽에 있는가?   
           GameBackground.bMove = True
           Player.bMove = False
-          GameBackground.ToXpos = Player.Speed
+          background_move("Right") # 배경이 오른쪽으로 이동함
         else:
             GameBackground.bMove = False
             Player.bMove = True
-            Player.ToXpos = -1 * Player.Speed # 배경은 Player의 반대로 이동해야 함.
+            Player.ToXpos = -1 * Player.Speed # Player가 왼쪽으로 이동함
+
+
+def background_move(Direction : str):
+# 이 함수에서 배경이 움직이는 것을 관리함
+
+   global Player
+   global GameBackground
+   global JumpBlock
+
+   if (Direction == "Right"):
+      GameBackground.ToXpos = Player.Speed
+      JumpBlock.ToXpos = Player.Speed
+   else:
+      GameBackground.ToXpos = -1 * Player.Speed
+      JumpBlock.ToXpos = -1 * Player.Speed
+   
 
 # --- create instance ---
 
@@ -182,6 +205,7 @@ Player = Character(PlayerImage, 0, 0, 1, 0.8)
 GameBackground = Background(BackgroundImage, 0, 0)
 LeftMoveButton = Button(LeftMoveButtonImage, 0, 0)
 RightMoveButton = Button(RightMoveButtonImage, 0, 0)
+JumpBlock = DynamicObject(JumpBlockImage, 0, 0)
 
 # --- begin setup ---
 
@@ -197,6 +221,8 @@ RightMoveButton.Ypos = ScreenHeight - RightMoveButton.Height
 LeftMoveButton.update_rect_info()
 RightMoveButton.update_rect_info()
 MouseCursor = MouseInfo()
+JumpBlock.Xpos = ScreenWidth / 2 - JumpBlock.Width / 2
+JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Height / 2
 
 # --- main loop ---
 pygame.key.set_repeat(10)
@@ -210,9 +236,11 @@ while Running:
       Player.update_movement()
     elif GameBackground.bMove:
       GameBackground.update_movement(Player.FrictionalForce)
+      JumpBlock.update_movement(Player.FrictionalForce)
 
     Player.update_rect_info()
     GameBackground.update_rect_info()
+    JumpBlock.update_rect_info()
 
     for event in pygame.event.get():
       if event.type == QUIT:
@@ -223,10 +251,10 @@ while Running:
 
       keys = pygame.key.get_pressed()  # 눌려진 키의 상태를 모두 가져옴
       if keys[pygame.K_d]: # 'd' 키가 눌려진 경우
-        RightMove()
+        right_move()
 
       elif keys[pygame.K_a]:  # 'a' 키가 눌려진 경우
-        LeftMove()
+        left_move()
 
       # --- Mouse binding ---
 
@@ -236,15 +264,16 @@ while Running:
       MouseCursor.Ypos = pygame.mouse.get_pos()[1]
 
       if RightMoveButton.Rect.collidepoint(MouseCursor.Xpos, MouseCursor.Ypos):
-        RightMove()
+        right_move()
 
       elif LeftMoveButton.Rect.collidepoint(MouseCursor.Xpos, MouseCursor.Ypos):
-        LeftMove()
+        left_move()
 
 
     # --- draw objects on screen ---
     Screen.fill((255, 255, 255))
     Screen.blit(BackgroundImage, (GameBackground.Xpos, GameBackground.Ypos))
+    Screen.blit(JumpBlockImage, (JumpBlock.Xpos, JumpBlock.Ypos))
     Screen.blit(PlayerImage, (Player.Xpos, Player.Ypos))
     Screen.blit(LeftMoveButtonImage, (LeftMoveButton.Xpos, LeftMoveButton.Ypos))
     Screen.blit(RightMoveButtonImage, (RightMoveButton.Xpos, RightMoveButton.Ypos))
