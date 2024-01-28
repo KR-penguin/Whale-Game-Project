@@ -2,6 +2,7 @@ import math
 import os
 import threading
 import pygame
+import game_class
 
 pygame.init()
 
@@ -20,17 +21,17 @@ SceneValue = 0  # 장면 값
 # --- 이미지 불러오기 ---
 BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 
-PlayerImage = []
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_0.png")) # 0이 기본 Image
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_1.png"))
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_2.png"))
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_3.png"))
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_4.png"))
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_5.png"))
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_6.png"))
-PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_7.png"))
+PlayerImage = [[], [], []]
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_0.png")) # 0이 기본 Image
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_1.png"))
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_2.png"))
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_3.png"))
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_4.png"))
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_5.png"))
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_6.png"))
+PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_7.png"))
 for i in range (8): # 모든 Image에 동일하게 크기 설정
-  PlayerImage[i] = pygame.transform.scale(PlayerImage[i], (ScreenHeight / 10, ScreenHeight / 10))
+  PlayerImage[0][i] = pygame.transform.scale(PlayerImage[0][i], (ScreenHeight / 10, ScreenHeight / 10))
 
 BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg")
 BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth * 3, ScreenHeight * 3))
@@ -44,117 +45,6 @@ RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (ScreenHeigh
 
 JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png")
 JumpBlockImage = pygame.transform.scale(JumpBlockImage, (ScreenHeight / 3, ScreenHeight / 3))
-
-# --- classes ---
-class Object:
-  def __init__(self, Image, Xpos, Ypos):
-    self.Rect = Image.get_rect()
-    self.Size = self.Rect.size
-    self.Width = self.Size[0]
-    self.Height = self.Size[1]
-    self.Xpos = Xpos
-    self.Ypos = Ypos
-
-
-
-class HUD:
-  def __init__(self, Xpos, Ypos):
-    self.Xpos = Xpos
-    self.Ypos = Ypos
-
-
-
-class MouseInfo:
-  def __init__(self):
-    self.Xpos = 0
-    self.Ypos = 0
-
-
-
-class GameModeBase:
-  def __init__(self):
-    self.AnimationIndex = 0
-    self.Temp = 0
-  
-  def update_property(self):
-    self.Temp += 0.1 # Temp가 Animation이 얼마나 빨리 update 될 지 결정함
-    self.AnimationIndex = math.floor(self.Temp)
-    if (self.AnimationIndex >= 8):
-      self.AnimationIndex = 0
-      self.Temp = 0
-
-       
-  
-
-
-
-class DynamicObject(Object):
-  def __init__(self, Image, Xpos, Ypos):
-    super().__init__(Image, Xpos, Ypos)
-    self.Xpos = Xpos
-    self.Ypos = Ypos
-    self.ToXpos = 0
-    self.ToYpos = 0
-
-  def update_rect_info(self, Image):
-    self.Image = Image
-    self.Rect = self.Image.get_rect()
-    self.Size = self.Rect.size
-    self.Width = self.Size[0]
-    self.Height = self.Size[1]
-    self.Rect.top = self.Ypos
-    self.Rect.bottom = self.Ypos - self.Height
-    self.Rect.right = self.Xpos - self.Width
-    self.Rect.left = self.Xpos
-
-  def update_movement(self, FrictionalForce, DeltaTime):
-    self.Xpos += self.ToXpos * DeltaTime
-    self.Ypos += (-1 * self.ToYpos) * DeltaTime
-    self.ToXpos *= FrictionalForce
-    self.ToYpos *= FrictionalForce
-
-
-
-class StaticObject(Object):
-  def __init__(self, Image, Xpos, Ypos):
-    super().__init__(Image, Xpos, Ypos)
-
-
-
-class Character(DynamicObject):
-
-  def __init__(self, Image, Xpos, Ypos, Speed, FrictionalForce):
-    super().__init__(Image, Xpos, Ypos)
-    self.Speed = Speed
-    self.FrictionalForce = FrictionalForce
-    self.bMove = False
-
-  def update_movement(self, DeltaTime):
-    self.Xpos += self.ToXpos * DeltaTime
-    self.Ypos += (-1 * self.ToYpos) * DeltaTime
-    self.ToXpos *= self.FrictionalForce
-    self.ToYpos *= self.FrictionalForce
-
-
-
-class Background(DynamicObject):
-
-  def __init__(self, Image, Xpos, Ypos):
-    super().__init__(Image, Xpos, Ypos)
-    self.bMove = False
-
-
-
-class Button(HUD, Object):
-
-  def __init__(self, Image, Xpos, Ypos):
-    # 상속된 변수들
-    HUD.__init__(self, Xpos, Ypos)
-    Object.__init__(self, Image, Xpos, Ypos)
-
-  def update_rect_info(self):
-    self.Rect.x = self.Xpos
-    self.Rect.y = self.Ypos
 
 
 
@@ -225,7 +115,10 @@ def mouse_input():
         
 
 
-def draw_scence(scene : int, animation_frame : int):
+def draw_scence(scene : int):
+
+    global Player
+    global GameBackground # 지금은 안씀
 
     if (scene == 0):
       Screen.fill((255, 255, 255))
@@ -233,7 +126,7 @@ def draw_scence(scene : int, animation_frame : int):
       # Dynamic Objects
       Screen.blit(BackgroundImage, (GameBackground.Xpos, GameBackground.Ypos))
       Screen.blit(JumpBlockImage, (JumpBlock.Xpos, JumpBlock.Ypos))
-      Screen.blit(PlayerImage[animation_frame], (Player.Xpos, Player.Ypos))
+      Screen.blit(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]], (Player.Xpos, Player.Ypos))
 
       # Static Objects
       Screen.blit(LeftMoveButtonImage, (LeftMoveButton.Xpos, LeftMoveButton.Ypos))
@@ -242,13 +135,13 @@ def draw_scence(scene : int, animation_frame : int):
 
 # --- create instance ---
 
-WhaleGameModeBase = GameModeBase()
-Player = Character(PlayerImage[0], 0, 0, 1, 0.8) # Dynamic Object
-GameBackground = Background(BackgroundImage, 0, 0) # Dynamic Object
-LeftMoveButton = Button(LeftMoveButtonImage, 0, 0) # Static Object
-RightMoveButton = Button(RightMoveButtonImage, 0, 0) # Static Object
-JumpBlock = DynamicObject(JumpBlockImage, 0, 0) # Dynamic Object
-MouseCursor = MouseInfo()
+WhaleGameModeBase = game_class.GameModeBase(0.8)
+Player = game_class.Character(PlayerImage[0][0], 0, 0, 1) # Dynamic Object
+GameBackground = game_class.Background(BackgroundImage, 0, 0) # Dynamic Object
+LeftMoveButton = game_class.Button(LeftMoveButtonImage, 0, 0) # Static Object
+RightMoveButton = game_class.Button(RightMoveButtonImage, 0, 0) # Static Object
+JumpBlock = game_class.DynamicObject(JumpBlockImage, 0, 0) # Dynamic Object
+MouseCursor = game_class.MouseInfo()
 
 # --- begin setup ---
 
@@ -265,7 +158,7 @@ JumpBlock.Xpos = ScreenWidth / 2 - JumpBlock.Width / 2
 JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Height / 2
 
 # Dynamic Object들은 update_rect_info 할 때 Image가 필요함.
-Player.update_rect_info(PlayerImage[0])
+Player.update_rect_info(PlayerImage[0][0])
 GameBackground.update_rect_info(BackgroundImage)
 JumpBlock.update_rect_info(JumpBlockImage)
 # Static Object들은 upate_rect_info 할 때 Image가 필요없음.
@@ -278,18 +171,20 @@ pygame.key.set_repeat(10)
 while Running:
 
     DeltaTime = Clock.tick(60)
-    WhaleGameModeBase.update_property()
 
     # update 하는 부분 {
     if Player.bMove:
-      Player.update_movement(DeltaTime)
+      Player.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
     elif GameBackground.bMove:
-      GameBackground.update_movement(Player.FrictionalForce, DeltaTime)
-      JumpBlock.update_movement(Player.FrictionalForce, DeltaTime)
+      GameBackground.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
+      JumpBlock.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
 
-    Player.update_rect_info(PlayerImage[WhaleGameModeBase.AnimationIndex])
+    Player.update_rect_info(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]])
     GameBackground.update_rect_info(BackgroundImage)
     JumpBlock.update_rect_info(JumpBlockImage)
+
+    Player.update_animation()
+    GameBackground.update_animation()
     # }
 
     for event in pygame.event.get():
@@ -301,6 +196,6 @@ while Running:
 
 
     # --- draw objects on screen ---
-    draw_scence(SceneValue, WhaleGameModeBase.AnimationIndex)
+    draw_scence(SceneValue)
 
 pygame.quit()
