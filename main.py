@@ -2,7 +2,6 @@ import math
 import os
 import threading
 import pygame
-from pygame.locals import QUIT  # Pygame 초기화
 
 pygame.init()
 
@@ -21,8 +20,17 @@ SceneValue = 0  # 장면 값
 # --- 이미지 불러오기 ---
 BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 
-PlayerImage = pygame.image.load(BasicImagePath + "test_player.png")
-PlayerImage = pygame.transform.scale(PlayerImage, (ScreenHeight / 10, ScreenHeight / 10))
+PlayerImage = []
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_0.png")) # 0이 기본 Image
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_1.png"))
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_2.png"))
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_3.png"))
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_4.png"))
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_5.png"))
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_6.png"))
+PlayerImage.append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_7.png"))
+for i in range (8): # 모든 Image에 동일하게 크기 설정
+  PlayerImage[i] = pygame.transform.scale(PlayerImage[i], (ScreenHeight / 10, ScreenHeight / 10))
 
 BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg")
 BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth * 3, ScreenHeight * 3))
@@ -63,13 +71,37 @@ class MouseInfo:
 
 
 
+class GameModeBase:
+  def __init__(self):
+    self.AnimationIndex = 0
+    self.Temp = 0
+  
+  def update_property(self):
+    self.Temp += 0.1 # Temp가 Animation이 얼마나 빨리 update 될 지 결정함
+    self.AnimationIndex = math.floor(self.Temp)
+    if (self.AnimationIndex >= 8):
+      self.AnimationIndex = 0
+      self.Temp = 0
+
+       
+  
+
+
+
 class DynamicObject(Object):
   def __init__(self, Image, Xpos, Ypos):
     super().__init__(Image, Xpos, Ypos)
+    self.Xpos = Xpos
+    self.Ypos = Ypos
     self.ToXpos = 0
     self.ToYpos = 0
 
-  def update_rect_info(self):
+  def update_rect_info(self, Image):
+    self.Image = Image
+    self.Rect = self.Image.get_rect()
+    self.Size = self.Rect.size
+    self.Width = self.Size[0]
+    self.Height = self.Size[1]
     self.Rect.top = self.Ypos
     self.Rect.bottom = self.Ypos - self.Height
     self.Rect.right = self.Xpos - self.Width
@@ -193,23 +225,30 @@ def mouse_input():
         
 
 
-def draw_scence(scene : int):
+def draw_scence(scene : int, animation_frame : int):
+
     if (scene == 0):
       Screen.fill((255, 255, 255))
+
+      # Dynamic Objects
       Screen.blit(BackgroundImage, (GameBackground.Xpos, GameBackground.Ypos))
       Screen.blit(JumpBlockImage, (JumpBlock.Xpos, JumpBlock.Ypos))
-      Screen.blit(PlayerImage, (Player.Xpos, Player.Ypos))
+      Screen.blit(PlayerImage[animation_frame], (Player.Xpos, Player.Ypos))
+
+      # Static Objects
       Screen.blit(LeftMoveButtonImage, (LeftMoveButton.Xpos, LeftMoveButton.Ypos))
       Screen.blit(RightMoveButtonImage, (RightMoveButton.Xpos, RightMoveButton.Ypos))
     pygame.display.update()
 
 # --- create instance ---
 
-Player = Character(PlayerImage, 0, 0, 1, 0.8)
-GameBackground = Background(BackgroundImage, 0, 0)
-LeftMoveButton = Button(LeftMoveButtonImage, 0, 0)
-RightMoveButton = Button(RightMoveButtonImage, 0, 0)
-JumpBlock = DynamicObject(JumpBlockImage, 0, 0)
+WhaleGameModeBase = GameModeBase()
+Player = Character(PlayerImage[0], 0, 0, 1, 0.8) # Dynamic Object
+GameBackground = Background(BackgroundImage, 0, 0) # Dynamic Object
+LeftMoveButton = Button(LeftMoveButtonImage, 0, 0) # Static Object
+RightMoveButton = Button(RightMoveButtonImage, 0, 0) # Static Object
+JumpBlock = DynamicObject(JumpBlockImage, 0, 0) # Dynamic Object
+MouseCursor = MouseInfo()
 
 # --- begin setup ---
 
@@ -222,19 +261,24 @@ LeftMoveButton.Xpos = 0
 LeftMoveButton.Ypos = ScreenHeight - LeftMoveButton.Height
 RightMoveButton.Xpos = ScreenWidth - RightMoveButton.Width
 RightMoveButton.Ypos = ScreenHeight - RightMoveButton.Height
-LeftMoveButton.update_rect_info()
-RightMoveButton.update_rect_info()
-MouseCursor = MouseInfo()
 JumpBlock.Xpos = ScreenWidth / 2 - JumpBlock.Width / 2
 JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Height / 2
+
+# Dynamic Object들은 update_rect_info 할 때 Image가 필요함.
+Player.update_rect_info(PlayerImage[0])
+GameBackground.update_rect_info(BackgroundImage)
+JumpBlock.update_rect_info(JumpBlockImage)
+# Static Object들은 upate_rect_info 할 때 Image가 필요없음.
+LeftMoveButton.update_rect_info()
+RightMoveButton.update_rect_info()
 
 # --- main loop ---
 pygame.key.set_repeat(10)
 
 while Running:
 
-    
     DeltaTime = Clock.tick(60)
+    WhaleGameModeBase.update_property()
 
     # update 하는 부분 {
     if Player.bMove:
@@ -243,13 +287,13 @@ while Running:
       GameBackground.update_movement(Player.FrictionalForce, DeltaTime)
       JumpBlock.update_movement(Player.FrictionalForce, DeltaTime)
 
-    Player.update_rect_info()
-    GameBackground.update_rect_info()
-    JumpBlock.update_rect_info()
+    Player.update_rect_info(PlayerImage[WhaleGameModeBase.AnimationIndex])
+    GameBackground.update_rect_info(BackgroundImage)
+    JumpBlock.update_rect_info(JumpBlockImage)
     # }
 
     for event in pygame.event.get():
-      if event.type == QUIT:
+      if event.type == pygame.QUIT:
         Running = False
 
     # --- Mouse binding ---
@@ -257,6 +301,6 @@ while Running:
 
 
     # --- draw objects on screen ---
-    draw_scence(SceneValue)
+    draw_scence(SceneValue, WhaleGameModeBase.AnimationIndex)
 
 pygame.quit()
