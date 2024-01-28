@@ -3,6 +3,7 @@ import os
 import threading
 import pygame
 import game_class
+import typing
 
 pygame.init()
 
