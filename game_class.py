@@ -5,12 +5,19 @@ import typing
 # --- classes ---
 class Object:
   def __init__(self, Image, Xpos, Ypos):
-    self.Rect = Image.get_rect()
+    self.Image = Image
+    self.Rect = self.Image.get_rect()
     self.Size = self.Rect.size
     self.Width = self.Size[0]
     self.Height = self.Size[1]
     self.Xpos = Xpos
     self.Ypos = Ypos
+
+  def update_rect_info(self):
+    self.Rect.top = self.Ypos
+    self.Rect.bottom = self.Ypos - self.Height
+    self.Rect.right = self.Xpos - self.Width
+    self.Rect.left = self.Xpos
 
 
 
@@ -90,14 +97,7 @@ class DynamicObject(Object):
 
   def update_rect_info(self, Image):
     self.Image = Image
-    self.Rect = self.Image.get_rect()
-    self.Size = self.Rect.size
-    self.Width = self.Size[0]
-    self.Height = self.Size[1]
-    self.Rect.top = self.Ypos
-    self.Rect.bottom = self.Ypos - self.Height
-    self.Rect.right = self.Xpos - self.Width
-    self.Rect.left = self.Xpos
+    super().update_rect_info()
 
   def update_movement(self, FrictionalForce, DeltaTime):
     self.Xpos += self.ToXpos * DeltaTime
@@ -119,16 +119,14 @@ class Character(DynamicObject, HighQualityAnimation):
     DynamicObject.__init__(self, Image, Xpos, Ypos)
     HighQualityAnimation.__init__(self, [8, 8, 4])
     self.Speed = Speed
-    self.bMove = False
 
 
 
-class Background(DynamicObject, BasicAnimation):
+class Background(StaticObject, BasicAnimation):
 
   def __init__(self, Image, Xpos, Ypos):
-    DynamicObject.__init__(self, Image, Xpos, Ypos)
+    StaticObject.__init__(self, Image, Xpos, Ypos)
     BasicAnimation.__init__(self, 8)
-    self.bMove = False
 
 
 
@@ -142,3 +140,22 @@ class Button(HUD, Object):
   def update_rect_info(self):
     self.Rect.x = self.Xpos
     self.Rect.y = self.Ypos
+
+
+
+class Camera():
+  def __init__(self, ScreenWidth, ScreenHeight):
+    self.Rect = pygame.Rect(0, 0, ScreenWidth, ScreenHeight)
+    self.Width = ScreenWidth
+    self.Height = ScreenHeight
+
+  def modify_rect_for_camera(self, entity):  # Camera에 맞게 entity의 좌표를 수정함
+    return entity.Rect.move(self.Rect.topleft)
+  
+  def update_rect_info(self, target, GameBackground : Background):  
+    # 카메라가 특정 대상을 추적하도록 업데이트합니다.
+
+    Xpos = target.Rect.centerx + self.Width / 2
+    Ypos = target.Rect.centery - self.Height / 2
+
+    

@@ -23,82 +23,51 @@ SceneValue = 0  # 장면 값
 BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 
 PlayerImage = [[], [], []]
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_0.png")) # 0이 기본 Image
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_1.png"))
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_2.png"))
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_3.png"))
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_4.png"))
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_5.png"))
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_6.png"))
-PlayerImage[0].append(pygame.image.load(BasicImagePath + "test_player/" + "test_player_7.png"))
+Player_Idle_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_0.png").convert_alpha()
+Player_Idle_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_1.png").convert_alpha()
+Player_Idle_2_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_2.png").convert_alpha()
+Player_Idle_3_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_3.png").convert_alpha()
+Player_Idle_4_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_4.png").convert_alpha()
+Player_Idle_5_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_5.png").convert_alpha()
+Player_Idle_6_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_6.png").convert_alpha()
+Player_Idle_7_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_7.png").convert_alpha()
+
+PlayerImage[0].append(Player_Idle_0_Image) # 0이 기본 Image
+PlayerImage[0].append(Player_Idle_1_Image)
+PlayerImage[0].append(Player_Idle_2_Image)
+PlayerImage[0].append(Player_Idle_3_Image)
+PlayerImage[0].append(Player_Idle_4_Image)
+PlayerImage[0].append(Player_Idle_5_Image)
+PlayerImage[0].append(Player_Idle_6_Image)
+PlayerImage[0].append(Player_Idle_7_Image)
+
 for i in range (8): # 모든 Image에 동일하게 크기 설정
   PlayerImage[0][i] = pygame.transform.scale(PlayerImage[0][i], (ScreenHeight / 10, ScreenHeight / 10))
 
-BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg")
+
+
+BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg").convert_alpha()
 BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth * 3, ScreenHeight * 3))
 
-LeftMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png")
+LeftMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png").convert_alpha()
 LeftMoveButtonImage = pygame.transform.scale(LeftMoveButtonImage, (ScreenHeight / 3, ScreenHeight / 3))
 LeftMoveButtonImage = pygame.transform.rotate(LeftMoveButtonImage, 180.0)
 
-RightMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png")
+RightMoveButtonImage = pygame.image.load(BasicImagePath + "MoveButton.png").convert_alpha()
 RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (ScreenHeight / 3, ScreenHeight / 3))
 
-JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png")
+JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png").convert_alpha()
 JumpBlockImage = pygame.transform.scale(JumpBlockImage, (ScreenHeight / 3, ScreenHeight / 3))
 
 
 
 # --- functions ---
 def move(direction):
-    global GameBackground
-    global Player
-    global ScreenWidth
 
     if direction == "Right":
-        edge = GameBackground.Rect.right <= ScreenWidth + 30
-        beyond_screen = Player.Rect.right >= ScreenWidth
-        beyond_middle = Player.Xpos + Player.Width / 2 >= ScreenWidth / 2
-        opposite_direction = "Left"
+      Player.ToXpos = Player.Speed
     else:  # "Left"
-        edge = GameBackground.Rect.left >= -30
-        beyond_screen = Player.Xpos <= 0
-        beyond_middle = Player.Xpos + Player.Width / 2 <= ScreenWidth / 2
-        opposite_direction = "Right"
-
-    if edge:
-        if beyond_screen:
-            GameBackground.bMove = False
-            Player.bMove = False
-        else:
-            GameBackground.bMove = False
-            Player.bMove = True
-            Player.ToXpos = Player.Speed if direction == "Right" else -1 * Player.Speed
-    else:
-        if beyond_middle:
-            GameBackground.bMove = True
-            Player.bMove = False
-            background_move(opposite_direction)
-        else:
-            GameBackground.bMove = False
-            Player.bMove = True
-            Player.ToXpos = Player.Speed if direction == "Right" else -1 * Player.Speed
-
-
-
-def background_move(Direction : str):
-# 이 함수에서 배경이 움직이는 것을 관리함
-
-   global Player
-   global GameBackground
-   global JumpBlock
-
-   if (Direction == "Right"):
-      GameBackground.ToXpos = Player.Speed
-      JumpBlock.ToXpos = Player.Speed
-   else:
-      GameBackground.ToXpos = -1 * Player.Speed
-      JumpBlock.ToXpos = -1 * Player.Speed
+      Player.ToXpos = -1 * Player.Speed
 
 
 
@@ -118,9 +87,6 @@ def mouse_input():
 
 def draw_scence(scene : int):
 
-    global Player
-    global GameBackground # 지금은 안씀
-
     if (scene == 0):
       Screen.fill((255, 255, 255))
 
@@ -137,12 +103,15 @@ def draw_scence(scene : int):
 # --- create instance ---
 
 WhaleGameModeBase = game_class.GameModeBase(0.8)
+GameCamera = game_class.Camera(ScreenWidth, ScreenHeight)
 Player = game_class.Character(PlayerImage[0][0], 0, 0, 1) # Dynamic Object
-GameBackground = game_class.Background(BackgroundImage, 0, 0) # Dynamic Object
+GameBackground = game_class.Background(BackgroundImage, 0, 0) # Static Object
 LeftMoveButton = game_class.Button(LeftMoveButtonImage, 0, 0) # Static Object
 RightMoveButton = game_class.Button(RightMoveButtonImage, 0, 0) # Static Object
-JumpBlock = game_class.DynamicObject(JumpBlockImage, 0, 0) # Dynamic Object
+JumpBlock = game_class.StaticObject(JumpBlockImage, 0, 0) # Static Object
 MouseCursor = game_class.MouseInfo()
+
+Entities = [Player, GameBackground, JumpBlock] # 이 게임의 Entity 리스트
 
 # --- begin setup ---
 
@@ -160,9 +129,9 @@ JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Height / 2
 
 # Dynamic Object들은 update_rect_info 할 때 Image가 필요함.
 Player.update_rect_info(PlayerImage[0][0])
-GameBackground.update_rect_info(BackgroundImage)
-JumpBlock.update_rect_info(JumpBlockImage)
 # Static Object들은 upate_rect_info 할 때 Image가 필요없음.
+GameBackground.update_rect_info()
+JumpBlock.update_rect_info()
 LeftMoveButton.update_rect_info()
 RightMoveButton.update_rect_info()
 
@@ -174,15 +143,10 @@ while Running:
     DeltaTime = Clock.tick(60)
 
     # update 하는 부분 {
-    if Player.bMove:
-      Player.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
-    elif GameBackground.bMove:
-      GameBackground.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
-      JumpBlock.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
+    Player.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
 
     Player.update_rect_info(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]])
-    GameBackground.update_rect_info(BackgroundImage)
-    JumpBlock.update_rect_info(JumpBlockImage)
+    GameCamera.update_rect_info(Player, GameBackground)
 
     Player.update_animation()
     GameBackground.update_animation()
@@ -197,6 +161,10 @@ while Running:
 
 
     # --- draw objects on screen ---
+
+#    for Entity in Entities:
+#       rect = GameCamera.modify_rect_for_camera(Entity)
+
     draw_scence(SceneValue)
 
 pygame.quit()
