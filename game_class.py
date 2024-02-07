@@ -2,22 +2,17 @@ import pygame
 import math
 import typing
 
+# Xpos와 Rect.x는 다르다
+# Xpos는 게임 세상의 x좌표를 뜻하지만,
+# Rect.x는 카메라에 그려지는 x좌표를 뜻한다.
+
 # --- classes ---
 class Object:
   def __init__(self, Image, Xpos, Ypos):
     self.Image = Image
     self.Rect = self.Image.get_rect()
-    self.Size = self.Rect.size
-    self.Width = self.Size[0]
-    self.Height = self.Size[1]
     self.Xpos = Xpos
     self.Ypos = Ypos
-
-  def update_rect_info(self):
-    self.Rect.top = self.Ypos
-    self.Rect.bottom = self.Ypos - self.Height
-    self.Rect.right = self.Xpos - self.Width
-    self.Rect.left = self.Xpos
 
 
 
@@ -95,15 +90,14 @@ class DynamicObject(Object):
     self.ToXpos = 0
     self.ToYpos = 0
 
-  def update_rect_info(self, Image):
-    self.Image = Image
-    super().update_rect_info()
-
   def update_movement(self, FrictionalForce, DeltaTime):
     self.Xpos += self.ToXpos * DeltaTime
-    self.Ypos += (-1 * self.ToYpos) * DeltaTime
+    self.Ypos += self.ToYpos * DeltaTime
     self.ToXpos *= FrictionalForce
     self.ToYpos *= FrictionalForce
+
+  def update_image(self, Image):
+    self.Image = Image
 
 
 
@@ -146,16 +140,25 @@ class Button(HUD, Object):
 class Camera():
   def __init__(self, ScreenWidth, ScreenHeight):
     self.Rect = pygame.Rect(0, 0, ScreenWidth, ScreenHeight)
-    self.Width = ScreenWidth
-    self.Height = ScreenHeight
+    self.Rect.width = ScreenWidth
+    self.Rect.height = ScreenHeight
 
-  def modify_rect_for_camera(self, entity):  # Camera에 맞게 entity의 좌표를 수정함
-    return entity.Rect.move(self.Rect.topleft)
+  def update_rect_info(self, entity):  # Camera에 맞게 entity의 좌표를 수정함
+    return pygame.Rect(entity.Xpos - self.Rect.x, entity.Ypos - self.Rect.y, entity.Rect.width, entity.Rect.height)
   
-  def update_rect_info(self, target, GameBackground : Background):  
+  def follow_target(self, target, GameBackground : Background):  
     # 카메라가 특정 대상을 추적하도록 업데이트합니다.
 
-    Xpos = target.Rect.centerx + self.Width / 2
-    Ypos = target.Rect.centery - self.Height / 2
+    # Target의 center top좌표(in gameworld) + 화면 너비의 절반
+    self.Rect.x = (target.Xpos + target.Rect.width / 2) - self.Rect.width / 2
+    # Target의 left center좌표(in gameworld) + 화면 높이의 절반
+    self.Rect.y = (target.Ypos + target.Rect.height / 2) - self.Rect.height / 2
 
-    
+    self.Rect.x = min(self.Rect.x, GameBackground.Xpos + GameBackground.Rect.width - self.Rect.width) # 카메라의 x좌표가 GameBackground를 넘지 않도록 함.
+    self.Rect.x = max(self.Rect.x, GameBackground.Xpos)  # 카메라의 x좌표가 GameBackground의 왼쪽을 넘지 않도록 함.
+    self.Rect.y = min(self.Rect.y, GameBackground.Ypos + GameBackground.Rect.height - self.Rect.height)  # 카메라의 y좌표가 GameBackground의 아래쪽을 넘지 않도록 함.
+    self.Rect.y = max(self.Rect.y, GameBackground.Ypos)  # 카메라의 y좌표가 GameBackground의 위쪽을 넘지 않도록 함.
+
+  def update_all_entities(self, entities : typing.List):
+    for entity in entities:
+      entity.Rect = self.update_rect_info(entity)
