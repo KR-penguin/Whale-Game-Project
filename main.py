@@ -56,6 +56,8 @@ RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (ScreenHeigh
 JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png").convert_alpha()
 JumpBlockImage = pygame.transform.scale(JumpBlockImage, (ScreenHeight / 3, ScreenHeight / 3))
 
+GroundImage = pygame.image.load(BasicImagePath + "ground.png").convert_alpha()
+GroundImage = pygame.transform.scale(GroundImage, (ScreenWidth * 10, ScreenHeight / 2.5))
 
 
 # --- functions ---
@@ -75,14 +77,12 @@ def move(Direction : str):
     elif (Direction == "Up"):
       if (Player.Ypos < (GameBackground.Ypos + GameBackground.Rect.height * 0.1)): # player가 위쪽 끝까지 이동했을 때
         return
-      Player.ToYpos = -1 * Player.Speed
+      Player.ToYpos = Player.Speed
 
     elif (Direction == "Down"):
       if (Player.Ypos > GameBackground.Ypos + (GameBackground.Rect.height - GameBackground.Rect.height * 0.1)): # player가 아래쪽 끝까지 이동했을 때
         return
-      Player.ToYpos = Player.Speed
-        
-
+      Player.ToYpos = -1 * Player.Speed
 
 def draw_scence(scene : int):
 
@@ -91,6 +91,7 @@ def draw_scence(scene : int):
 
       # Dynamic Objects
       Screen.blit(BackgroundImage, (GameBackground.Rect.x, GameBackground.Rect.y))
+      Screen.blit(GroundImage, (Ground.Rect.x, Ground.Rect.y))
       Screen.blit(JumpBlockImage, (JumpBlock.Rect.x, JumpBlock.Rect.y))
       Screen.blit(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]], (Player.Rect.x, Player.Rect.y))
 
@@ -101,16 +102,18 @@ def draw_scence(scene : int):
 
 # --- create instance ---
 
-WhaleGameModeBase = game_class.GameModeBase(0.8)
+WhaleGameModeBase = game_class.GameModeBase(0.8, ScreenHeight)
 GameCamera = game_class.Camera(ScreenWidth, ScreenHeight)
-Player = game_class.Character(PlayerImage[0][0], 0, 0, 1) # Dynamic Object
+Player = game_class.Character(PlayerImage[0][0], 0, 0, 1, 1, ScreenHeight) # Dynamic Object
 GameBackground = game_class.Background(BackgroundImage, 0, 0) # Static Object
 LeftMoveButton = game_class.Button(LeftMoveButtonImage, 0, 0) # Static Object
 RightMoveButton = game_class.Button(RightMoveButtonImage, 0, 0) # Static Object
 JumpBlock = game_class.StaticObject(JumpBlockImage, 0, 0) # Static Object
+Ground = game_class.StaticObject(GroundImage, 0, 0) # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, GameBackground, JumpBlock] # 이 게임의 Entity 리스트
+Entities = [Player, JumpBlock, Ground] # 이 게임의 Entity 리스트
+
 
 # --- begin setup ---
 
@@ -125,6 +128,8 @@ RightMoveButton.Xpos = ScreenWidth - RightMoveButton.Rect.width
 RightMoveButton.Ypos = ScreenHeight - RightMoveButton.Rect.height
 JumpBlock.Xpos = ScreenWidth / 2 - JumpBlock.Rect.width / 2
 JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Rect.height / 2
+Ground.Xpos = ScreenWidth / 2 - Ground.Rect.width / 2
+Ground.Ypos = (GameBackground.Ypos + GameBackground.Rect.height) - Ground.Rect.height
 
 GameCamera.Rect.x = 100
 GameCamera.Rect.y = 100
@@ -137,7 +142,7 @@ while Running:
     DeltaTime = Clock.tick(60)
 
     # update 하는 부분 {
-    Player.update_movement(WhaleGameModeBase.FrictionalForce, DeltaTime)
+    Player.update_movement(WhaleGameModeBase.FrictionalForce, WhaleGameModeBase.GravityValue, DeltaTime)
 
     Player.update_animation()
     GameBackground.update_animation()
@@ -151,14 +156,19 @@ while Running:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_d]:
         move("Right")
-    elif keys[pygame.K_a]:
+    if keys[pygame.K_a]:
         move("Left")
-    elif keys[pygame.K_w]:
-        move("Up")
-    elif keys[pygame.K_s]:
-        move("Down")
+    if keys[pygame.K_SPACE]:
+        Player.Jump()
+
+    if ((Player.Ypos + Player.Rect.height) >= (Ground.Ypos - Ground.Rect.height * 0.1)): # 땅에 닿였다면
+       Player.bFalling = False
+    else:
+       Player.bFalling = True
+       
 
     # --- draw objects on screen ---
+    GameBackground.Rect = GameCamera.update_rect_info(GameBackground)
     GameCamera.update_all_entities(Entities)
     GameCamera.follow_target(Player, GameBackground)
     draw_scence(SceneValue)

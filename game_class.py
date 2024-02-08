@@ -31,8 +31,9 @@ class MouseInfo:
 
 
 class GameModeBase:
-  def __init__(self, FrictionalForce):
+  def __init__(self, FrictionalForce, ScreenHeight):
     self.FrictionalForce = FrictionalForce
+    self.GravityValue = ScreenHeight / 540
 
 
 
@@ -89,12 +90,12 @@ class DynamicObject(Object):
     self.Ypos = Ypos
     self.ToXpos = 0
     self.ToYpos = 0
+    self.bApplyGravity = True
 
   def update_movement(self, FrictionalForce, DeltaTime):
     self.Xpos += self.ToXpos * DeltaTime
-    self.Ypos += self.ToYpos * DeltaTime
     self.ToXpos *= FrictionalForce
-    self.ToYpos *= FrictionalForce
+    self.Ypos += -1 * self.ToYpos * DeltaTime
 
   def update_image(self, Image):
     self.Image = Image
@@ -109,10 +110,18 @@ class StaticObject(Object):
 
 class Character(DynamicObject, HighQualityAnimation):
 
-  def __init__(self, Image, Xpos, Ypos, Speed):
+  def __init__(self, Image, Xpos, Ypos, Speed, MaxJump, ScreenHeight):
     DynamicObject.__init__(self, Image, Xpos, Ypos)
     HighQualityAnimation.__init__(self, [8, 8, 4])
     self.Speed = Speed
+    self.bFalling = None
+
+  def update_movement(self, FrictionalForce, Gravity, DeltaTime):
+    super().update_movement(FrictionalForce, DeltaTime)
+    if (self.bFalling):
+      self.ToYpos = -Gravity
+    else:
+      self.ToYpos = 0
 
 
 
