@@ -19,15 +19,21 @@ SceneValue = 0  # 장면 값
 # --- 이미지 불러오기 ---
 BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 
-PlayerImage = [[], [], []]
-Player_Idle_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_0.png").convert_alpha()
-Player_Idle_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_1.png").convert_alpha()
-Player_Idle_2_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_2.png").convert_alpha()
-Player_Idle_3_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_3.png").convert_alpha()
-Player_Idle_4_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_4.png").convert_alpha()
-Player_Idle_5_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_5.png").convert_alpha()
-Player_Idle_6_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_6.png").convert_alpha()
-Player_Idle_7_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_7.png").convert_alpha()
+PlayerImage = [[], [], [], []] # Idle, Run, Jump, Fall
+Player_Idle_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_0.png").convert_alpha()
+Player_Idle_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_1.png").convert_alpha()
+Player_Idle_2_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_2.png").convert_alpha()
+Player_Idle_3_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_3.png").convert_alpha()
+Player_Idle_4_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_4.png").convert_alpha()
+Player_Idle_5_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_5.png").convert_alpha()
+Player_Idle_6_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_6.png").convert_alpha()
+Player_Idle_7_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_7.png").convert_alpha()
+
+Player_Jump_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_jump_0.png").convert_alpha()
+Player_Jump_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_jump_1.png").convert_alpha()
+
+Player_Falling_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_falling_0.png").convert_alpha()
+Player_Falling_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_falling_1.png").convert_alpha()
 
 PlayerImage[0].append(Player_Idle_0_Image) # 0이 기본 Image
 PlayerImage[0].append(Player_Idle_1_Image)
@@ -37,6 +43,12 @@ PlayerImage[0].append(Player_Idle_4_Image)
 PlayerImage[0].append(Player_Idle_5_Image)
 PlayerImage[0].append(Player_Idle_6_Image)
 PlayerImage[0].append(Player_Idle_7_Image)
+
+PlayerImage[2].append(Player_Jump_0_Image) # 0이 기본 Image
+PlayerImage[2].append(Player_Jump_1_Image)
+
+PlayerImage[3].append(Player_Falling_0_Image) # 0이 기본 Image
+PlayerImage[3].append(Player_Falling_1_Image)
 
 for i in range (8): # 모든 Image에 동일하게 크기 설정
   PlayerImage[0][i] = pygame.transform.scale(PlayerImage[0][i], (ScreenHeight / 10, ScreenHeight / 10))
@@ -56,7 +68,7 @@ RightMoveButtonImage = pygame.transform.scale(RightMoveButtonImage, (ScreenHeigh
 JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png").convert_alpha()
 JumpBlockImage = pygame.transform.scale(JumpBlockImage, (ScreenHeight / 3, ScreenHeight / 3))
 
-GroundImage = pygame.image.load(BasicImagePath + "ground.png").convert_alpha()
+GroundImage = pygame.image.load(BasicImagePath + "Ground.png").convert_alpha()
 GroundImage = pygame.transform.scale(GroundImage, (ScreenWidth * 10, ScreenHeight / 2.5))
 
 
@@ -102,14 +114,14 @@ def draw_scence(scene : int):
 
 # --- create instance ---
 
-WhaleGameModeBase = game_class.GameModeBase(0.8, ScreenHeight)
-GameCamera = game_class.Camera(ScreenWidth, ScreenHeight)
-Player = game_class.Character(PlayerImage[0][0], 0, 0, 1, 1, ScreenHeight) # Dynamic Object
-GameBackground = game_class.Background(BackgroundImage, 0, 0) # Static Object
-LeftMoveButton = game_class.Button(LeftMoveButtonImage, 0, 0) # Static Object
-RightMoveButton = game_class.Button(RightMoveButtonImage, 0, 0) # Static Object
-JumpBlock = game_class.StaticObject(JumpBlockImage, 0, 0) # Static Object
-Ground = game_class.StaticObject(GroundImage, 0, 0) # Static Object
+WhaleGameModeBase = game_class.GameModeBase(Screen, "TargetXY")
+GameCamera = game_class.Camera(WhaleGameModeBase)
+Player = game_class.Character(PlayerImage[0][0], 1, WhaleGameModeBase) # Dynamic Object
+GameBackground = game_class.Background(BackgroundImage) # Static Object
+LeftMoveButton = game_class.Button(LeftMoveButtonImage) # Static Object
+RightMoveButton = game_class.Button(RightMoveButtonImage) # Static Object
+JumpBlock = game_class.StaticObject(JumpBlockImage) # Static Object
+Ground = game_class.StaticObject(GroundImage) # Static Object
 MouseCursor = game_class.MouseInfo()
 
 Entities = [Player, JumpBlock, Ground] # 이 게임의 Entity 리스트
@@ -119,7 +131,7 @@ Entities = [Player, JumpBlock, Ground] # 이 게임의 Entity 리스트
 
 Running = True
 Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2
-Player.Ypos = ScreenHeight / 2 - Player.Rect.height / 2
+Player.Ypos = ScreenHeight / 2 - Player.Rect.height
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Rect.width / 2
 GameBackground.Ypos = ScreenHeight - GameBackground.Rect.height + ScreenHeight / 8
 LeftMoveButton.Xpos = 0
@@ -142,7 +154,7 @@ while Running:
     DeltaTime = Clock.tick(60)
 
     # update 하는 부분 {
-    Player.update_movement(WhaleGameModeBase.FrictionalForce, WhaleGameModeBase.GravityValue, DeltaTime)
+    Player.update_movement(WhaleGameModeBase, Ground, DeltaTime)
 
     Player.update_animation()
     GameBackground.update_animation()
@@ -159,18 +171,14 @@ while Running:
     if keys[pygame.K_a]:
         move("Left")
     if keys[pygame.K_SPACE]:
-        Player.Jump()
+        Player.jump_start()
 
-    if ((Player.Ypos + Player.Rect.height) >= (Ground.Ypos - Ground.Rect.height * 0.1)): # 땅에 닿였다면
-       Player.bFalling = False
-    else:
-       Player.bFalling = True
-       
+    
 
     # --- draw objects on screen ---
     GameBackground.Rect = GameCamera.update_rect_info(GameBackground)
     GameCamera.update_all_entities(Entities)
-    GameCamera.follow_target(Player, GameBackground)
+    GameCamera.follow_target(Player, GameBackground, WhaleGameModeBase)
     draw_scence(SceneValue)
 
 pygame.quit()
