@@ -19,39 +19,43 @@ SceneValue = 0  # 장면 값
 # --- 이미지 불러오기 ---
 BasicImagePath = os.path.abspath('.') + '/' + "sources/images/"  # image 기본 경로 설정
 
-PlayerImage = [[], [], [], []] # Idle, Run, Jump, Fall
-Player_Idle_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_0.png").convert_alpha()
-Player_Idle_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_1.png").convert_alpha()
-Player_Idle_2_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_2.png").convert_alpha()
-Player_Idle_3_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_3.png").convert_alpha()
-Player_Idle_4_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_4.png").convert_alpha()
-Player_Idle_5_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_5.png").convert_alpha()
-Player_Idle_6_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_6.png").convert_alpha()
-Player_Idle_7_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_idle_7.png").convert_alpha()
+PlayerImage = [[], [], [], [], []] # Idle, Run_Right, Run_Left, Jump, Fall
 
-Player_Jump_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_jump_0.png").convert_alpha()
-Player_Jump_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_jump_1.png").convert_alpha()
+# Idle Images
+for i in range(8):
+    image_path = BasicImagePath + "test_player/test_player_idle_" + str(i) + ".png"
+    image = pygame.image.load(image_path).convert_alpha()
+    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    PlayerImage[0].append(image)
 
-Player_Falling_0_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_falling_0.png").convert_alpha()
-Player_Falling_1_Image = pygame.image.load(BasicImagePath + "test_player/" + "test_player_falling_1.png").convert_alpha()
+# Run Right Images
+for i in range(8):
+    image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
+    image = pygame.image.load(image_path).convert_alpha()
+    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    PlayerImage[1].append(image)
 
-PlayerImage[0].append(Player_Idle_0_Image) # 0이 기본 Image
-PlayerImage[0].append(Player_Idle_1_Image)
-PlayerImage[0].append(Player_Idle_2_Image)
-PlayerImage[0].append(Player_Idle_3_Image)
-PlayerImage[0].append(Player_Idle_4_Image)
-PlayerImage[0].append(Player_Idle_5_Image)
-PlayerImage[0].append(Player_Idle_6_Image)
-PlayerImage[0].append(Player_Idle_7_Image)
+# Run Left Images
+for i in range(8):
+    image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
+    image = pygame.image.load(image_path).convert_alpha()
+    image = pygame.transform.flip(image, True, False)
+    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    PlayerImage[2].append(image)
 
-PlayerImage[2].append(Player_Jump_0_Image) # 0이 기본 Image
-PlayerImage[2].append(Player_Jump_1_Image)
+# Jump Images
+for i in range(2):
+    image_path = BasicImagePath + "test_player/test_player_jump_" + str(i) + ".png"
+    image = pygame.image.load(image_path).convert_alpha()
+    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    PlayerImage[3].append(image)
 
-PlayerImage[3].append(Player_Falling_0_Image) # 0이 기본 Image
-PlayerImage[3].append(Player_Falling_1_Image)
-
-for i in range (8): # 모든 Image에 동일하게 크기 설정
-  PlayerImage[0][i] = pygame.transform.scale(PlayerImage[0][i], (ScreenHeight / 10, ScreenHeight / 10))
+# Falling Images
+for i in range(2):
+    image_path = BasicImagePath + "test_player/test_player_falling_" + str(i) + ".png"
+    image = pygame.image.load(image_path).convert_alpha()
+    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    PlayerImage[4].append(image)
 
 
 
@@ -73,28 +77,6 @@ GroundImage = pygame.transform.scale(GroundImage, (ScreenWidth * 10, ScreenHeigh
 
 
 # --- functions ---
-def move(Direction : str):
-  
-    if (Direction == "Right"):
-      if (Player.Xpos > GameBackground.Xpos + (GameBackground.Rect.width - GameBackground.Rect.width * 0.1)): # player가 오른쪽 끝까지 이동했을 때
-        # GameBackground.Rect.width - GameBackground.Rect.width * 0.1   ==> 화면 오른쪽 끝보다 조금 왼쪽
-        return
-      Player.ToXpos = Player.Speed
-
-    elif (Direction == "Left"):
-      if (Player.Xpos < (GameBackground.Xpos + GameBackground.Rect.width * 0.1)): # player가 왼쪽 끝까지 이동했을 때
-        return
-      Player.ToXpos = -1 * Player.Speed
-
-    elif (Direction == "Up"):
-      if (Player.Ypos < (GameBackground.Ypos + GameBackground.Rect.height * 0.1)): # player가 위쪽 끝까지 이동했을 때
-        return
-      Player.ToYpos = Player.Speed
-
-    elif (Direction == "Down"):
-      if (Player.Ypos > GameBackground.Ypos + (GameBackground.Rect.height - GameBackground.Rect.height * 0.1)): # player가 아래쪽 끝까지 이동했을 때
-        return
-      Player.ToYpos = -1 * Player.Speed
 
 def draw_scence(scene : int):
 
@@ -130,7 +112,7 @@ Entities = [Player, JumpBlock, Ground] # 이 게임의 Entity 리스트
 # --- begin setup ---
 
 Running = True
-Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2
+Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2 
 Player.Ypos = ScreenHeight / 2 - Player.Rect.height
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Rect.width / 2
 GameBackground.Ypos = ScreenHeight - GameBackground.Rect.height + ScreenHeight / 8
@@ -167,9 +149,9 @@ while Running:
     # --- Keyboard binding ---
     keys = pygame.key.get_pressed()
     if keys[pygame.K_d]:
-        move("Right")
+        Player.move("Right", GameBackground)
     if keys[pygame.K_a]:
-        move("Left")
+        Player.move("Left", GameBackground)
     if keys[pygame.K_SPACE]:
         Player.jump_start()
 
