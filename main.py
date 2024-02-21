@@ -25,37 +25,29 @@ PlayerImage = [[], [], [], [], []] # Idle, Run_Right, Run_Left, Jump, Fall
 for i in range(8):
     image_path = BasicImagePath + "test_player/test_player_idle_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
     PlayerImage[0].append(image)
 
-# Run Right Images
+# Run Images
 for i in range(8):
     image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
+    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
     PlayerImage[1].append(image)
-
-# Run Left Images
-for i in range(8):
-    image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
-    image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.flip(image, True, False)
-    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
-    PlayerImage[2].append(image)
 
 # Jump Images
 for i in range(2):
     image_path = BasicImagePath + "test_player/test_player_jump_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
-    PlayerImage[3].append(image)
+    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
+    PlayerImage[2].append(image)
 
 # Falling Images
 for i in range(2):
     image_path = BasicImagePath + "test_player/test_player_falling_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 10, ScreenHeight // 10))
-    PlayerImage[4].append(image)
+    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
+    PlayerImage[3].append(image)
 
 
 
@@ -84,14 +76,14 @@ def draw_scence(scene : int):
       Screen.fill((255, 255, 255))
 
       # Dynamic Objects
-      Screen.blit(BackgroundImage, (GameBackground.Rect.x, GameBackground.Rect.y))
-      Screen.blit(GroundImage, (Ground.Rect.x, Ground.Rect.y))
-      Screen.blit(JumpBlockImage, (JumpBlock.Rect.x, JumpBlock.Rect.y))
-      Screen.blit(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]], (Player.Rect.x, Player.Rect.y))
+      Screen.blit(GameBackground.Image, (GameBackground.Rect.x, GameBackground.Rect.y))
+      Screen.blit(Ground.Image, (Ground.Rect.x, Ground.Rect.y))
+      Screen.blit(JumpBlock.Image, (JumpBlock.Rect.x, JumpBlock.Rect.y))
+      Screen.blit(Player.Image, (Player.Rect.x, Player.Rect.y))
 
       # Static Objects
-      Screen.blit(LeftMoveButtonImage, (LeftMoveButton.Rect.x, LeftMoveButton.Rect.y))
-      Screen.blit(RightMoveButtonImage, (RightMoveButton.Rect.x, RightMoveButton.Rect.y))
+      Screen.blit(LeftMoveButton.Image, (LeftMoveButton.Rect.x, LeftMoveButton.Rect.y))
+      Screen.blit(RightMoveButton.Image, (RightMoveButton.Rect.x, RightMoveButton.Rect.y))
     pygame.display.update()
 
 # --- create instance ---
@@ -132,12 +124,11 @@ GameCamera.Rect.y = 100
 pygame.key.set_repeat(10)
 
 while Running:
-
     DeltaTime = Clock.tick(60)
 
     # update 하는 부분 {
     Player.update_movement(WhaleGameModeBase, Ground, DeltaTime)
-
+    Player.Image = PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]]
     Player.update_animation()
     GameBackground.update_animation()
     # }
