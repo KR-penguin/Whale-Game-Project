@@ -13,6 +13,12 @@ class Object:
         self.Rect = self.Image.get_rect()
         self.Xpos = 0
         self.Ypos = 0
+        self.Mask = pygame.mask.from_surface(self.Image)
+    
+    def update_image(self, NewImage):
+        self.Image = NewImage
+        self.Rect = self.Image.get_rect()
+        self.Mask = pygame.mask.from_surface(self.Image)
 
 
 
@@ -38,7 +44,14 @@ class GameModeBase:
         self.CameraFollowMethod = FollowMethod # "TargetXY", "TargetX", "TargetY"이 있음
         # 1080 / 1102 = 0.98
 
+    def detect_collision(self, A, B):
+        self.offset_x = A.Xpos - B.Xpos
+        self.offset_y = A.Ypos - B.Ypos
 
+        if A.Mask.overlap(B.Mask, (self.offset_x, self.offset_y)):
+            return True
+        else:
+            return False
 
 class BasicAnimation():
     def __init__(self, MaxFrame):
@@ -87,7 +100,7 @@ class HighQualityAnimation():
           else: # Animation Frame을 마지막 frame으로 초기화함. 
             self.AnimationFrame = [2, math.floor(self.Temp)]
 
-        elif (self.Status == "Falling"):
+        elif (self.Status == "Fall"):
           if(self.AnimationFrame[1] >= self.AnimationTotalFrame[3] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
             self.AnimationFrame[1] = self.AnimationTotalFrame[3] - 1
           else: # Animation Frame을 마지막 frame으로 초기화함.
@@ -96,8 +109,8 @@ class HighQualityAnimation():
     def change_status(self, NewStatus : str):
         if (self.Status == NewStatus):
           return
-        elif ((self.Status == "Jump" or self.Status == "Falling") and (NewStatus == "Run")):
-          # Jump거나 Falling인 상태에서는 Run_Right나 Run_Left 상태로 바꾸지 못하도록 함
+        elif ((self.Status == "Jump" or self.Status == "Fall") and (NewStatus == "Run")):
+          # Jump거나 Fall인 상태에서는 Run_Right나 Run_Left 상태로 바꾸지 못하도록 함
           return  
         self.Status = NewStatus
         self.Temp = 0
@@ -140,36 +153,31 @@ class Character(DynamicObject, HighQualityAnimation):
 
     def __init__(self, Image, Speed, GameModeBase : GameModeBase):
         DynamicObject.__init__(self, Image)
-        HighQualityAnimation.__init__(self, [8, 8, 8, 2, 2]) # HighQualityAnimation 참고
+        HighQualityAnimation.__init__(self, [8, 8, 2, 2]) # HighQualityAnimation 참고
         self.Speed = Speed
-        self.bFalling = True
         self.Gravity = 0
 
         self.JumpValue = 1
         self.MaxJumpVelocity = GameModeBase.GameScreenHeight / 270
         self.bStepOnGround = None # boolean
+        self.bBlockByEntity = None # boolean
 
-    def update_movement(self, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
+    def update_movement(self, LevelComponents : typing.List, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
         super().update_movement(DeltaTime)
 
-        self.ToXpos = math.trunc(self.ToXpos)
-        if (self.bFalling == True):
+        if (self.Status == "Fall"):
           self.ToYpos = -self.Gravity
           if (self.Gravity < 55.6): # 최대 중력
             self.Gravity += GameModeBase.GravityAcceleration
-          self.change_status("Falling")
-
-          if ((self.Ypos + self.Rect.height) >= (Ground.Ypos - Ground.Rect.height * 0.1)): # 땅에 닿였다면
-            self.ToYpos = 0
-            self.JumpValue = 1
-            self.bFalling = False
-            self.change_status("Idle")
+          self.change_status("Fall")
 
         elif (self.Status == "Jump"):
           if (self.ToYpos <= 0):
             self.jump_stop()
           else:
             self.ToYpos -= 0.25
+          
+        self.update_collision(LevelComponents, GameModeBase)
 
     def move(self, Direction : str, GameBackground :  Background):
   
@@ -191,12 +199,11 @@ class Character(DynamicObject, HighQualityAnimation):
     def jump_start(self):
         if (self.JumpValue >= 1):
           self.JumpValue -= 1
-          self.bFalling = False
           self.change_status("Jump")
           self.ToYpos = self.MaxJumpVelocity
 
     def jump_stop(self):
-        self.bFalling = True
+        self.change_status("Fall")
         self.Gravity = 0
 
     def update_animation(self):
@@ -210,7 +217,11 @@ class Character(DynamicObject, HighQualityAnimation):
       if (self.ToXpos == 0) and (self.Status == "Running"):
           self.change_status("Idle")
 
-
+    def update_collision(self, LevelComponents : typing.List, WhaleGameMode : GameModeBase):
+        self.Collision = False
+        # Collision 판단 (감지)
+        for LevelComponent in LevelComponents:
+            self.Collision = WhaleGameMode.detect_collision(self, LevelComponent)
 
 class Button(HUD, Object):
 
