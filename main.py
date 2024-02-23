@@ -32,7 +32,7 @@ for i in range(8):
 for i in range(8):
     image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
+    image = pygame.transform.scale(image, (ScreenHeight // 6, ScreenHeight // 6))
     PlayerImage[1].append(image)
 
 # Jump Images
@@ -75,15 +75,12 @@ def draw_scence(scene : int):
     if (scene == 0):
       Screen.fill((255, 255, 255))
 
-      # Dynamic Objects
       Screen.blit(GameBackground.Image, (GameBackground.Rect.x, GameBackground.Rect.y))
       Screen.blit(Ground.Image, (Ground.Rect.x, Ground.Rect.y))
       Screen.blit(JumpBlock.Image, (JumpBlock.Rect.x, JumpBlock.Rect.y))
       Screen.blit(Player.Image, (Player.Rect.x, Player.Rect.y))
-
-      # Static Objects
-      Screen.blit(LeftMoveButton.Image, (LeftMoveButton.Rect.x, LeftMoveButton.Rect.y))
-      Screen.blit(RightMoveButton.Image, (RightMoveButton.Rect.x, RightMoveButton.Rect.y))
+      Screen.blit(LeftMoveButton.Image, (LeftMoveButton.Xpos, LeftMoveButton.Ypos))
+      Screen.blit(RightMoveButton.Image, (RightMoveButton.Xpos, RightMoveButton.Ypos))
     pygame.display.update()
 
 # --- create instance ---
@@ -98,14 +95,15 @@ JumpBlock = game_class.StaticObject(JumpBlockImage) # Static Object
 Ground = game_class.StaticObject(GroundImage) # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, JumpBlock, Ground] # 이 게임의 Entity 리스트
+Entities = [Player, GameBackground, JumpBlock, Ground] # 이 게임의 Entity 리스트
+LevelComponents = [Ground, JumpBlock] # 이 레벨의 Entity 리스트
 
 
 # --- begin setup ---
 
 Running = True
-Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2 
-Player.Ypos = ScreenHeight / 2 - Player.Rect.height
+Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2
+Player.Ypos = ScreenHeight / 2 - Player.Rect.height * 2
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Rect.width / 2
 GameBackground.Ypos = ScreenHeight - GameBackground.Rect.height + ScreenHeight / 8
 LeftMoveButton.Xpos = 0
@@ -117,18 +115,16 @@ JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Rect.height / 2
 Ground.Xpos = ScreenWidth / 2 - Ground.Rect.width / 2
 Ground.Ypos = (GameBackground.Ypos + GameBackground.Rect.height) - Ground.Rect.height
 
-GameCamera.Rect.x = 100
-GameCamera.Rect.y = 100
-
 # --- main loop ---
 pygame.key.set_repeat(10)
 
 while Running:
     DeltaTime = Clock.tick(60)
+    print("{0}, {1}".format(Player.Rect.bottom, Ground.Rect.top))
 
     # update 하는 부분 {
-    Player.update_movement(WhaleGameModeBase, Ground, DeltaTime)
-    Player.Image = PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]]
+    Player.update_movement(LevelComponents, WhaleGameModeBase, Ground, DeltaTime)
+    Player.update_image(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]])
     Player.update_animation()
     GameBackground.update_animation()
     # }
@@ -149,7 +145,7 @@ while Running:
     
 
     # --- draw objects on screen ---
-    GameBackground.Rect = GameCamera.update_rect_info(GameBackground)
+
     GameCamera.update_all_entities(Entities)
     GameCamera.follow_target(Player, GameBackground, WhaleGameModeBase)
     draw_scence(SceneValue)
