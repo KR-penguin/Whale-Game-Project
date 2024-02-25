@@ -153,42 +153,39 @@ class Character(DynamicObject, HighQualityAnimation):
 
     def __init__(self, Image, Speed, GameModeBase : GameModeBase):
         DynamicObject.__init__(self, Image)
-        HighQualityAnimation.__init__(self, [8, 8, 2, 2]) # HighQualityAnimation 참고
+        HighQualityAnimation.__init__(self, [8, 8, 8, 2, 2]) # HighQualityAnimation 참고
         self.Speed = Speed
+        self.bFalling = True
         self.Gravity = 0
 
         self.JumpValue = 1
-        self.MaxJumpVelocity = GameModeBase.GameScreenHeight / 135
-
+        self.MaxJumpVelocity = GameModeBase.GameScreenHeight / 270
         self.bStepOnGround = None # boolean
-        self.bBlockByEntity = None # boolean
 
-    def update_movement(self, LevelComponents : typing.List, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
+    def update_movement(self, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
         super().update_movement(DeltaTime)
 
-        self.update_collision(LevelComponents, GameModeBase)
-
-        if (self.Status == "Jump"):
-          if (self.ToYpos >= self.MaxJumpVelocity):
-            self.jump_stop()
-          else:
-            self.ToYpos += 0.1
-
-        elif (self.Status == "Fall"):
+        self.ToXpos = math.trunc(self.ToXpos)
+        if (self.bFalling == True):
           self.ToYpos = -self.Gravity
-          if (self.Gravity < 55.6): # 최대 중력값보다 낮으면 중력 가속도 더하기
+          if (self.Gravity < 55.6): # 최대 중력
             self.Gravity += GameModeBase.GravityAcceleration
+          self.change_status("Falling")
 
-        if (self.bStepOnGround): # Entity 위에 서있을 때
+          if ((self.Ypos + self.Rect.height) >= (Ground.Ypos - Ground.Rect.height * 0.1)): # 땅에 닿였다면
             self.ToYpos = 0
             self.JumpValue = 1
-            self.Gravity = 0
+            self.bFalling = False
             self.change_status("Idle")
-        elif (self.bBlockByEntity): # Entity 옆에 부딫혔을 때
-            self.ToYpos = 0
+
+        elif (self.Status == "Jump"):
+          if (self.ToYpos <= 0):
+            self.jump_stop()
+          else:
+            self.ToYpos -= 0.25
 
     def move(self, Direction : str, GameBackground :  Background):
-  
+
         if (Direction == "Right"):
           self.change_status("Run")
           self.Direction = "Right"
@@ -216,13 +213,13 @@ class Character(DynamicObject, HighQualityAnimation):
 
     def update_animation(self):
       super().update_animation()
-      
+
        # Animation Filp
       if (self.Direction == "Right"):
           self.Image = pygame.transform.flip(self.Image, True, False)
 
     def update_collision(self, LevelComponents : typing.List, WhaleGameMode : GameModeBase):
-       
+
         self.Collision = False
         # Collision 판단 (감지)
         for LevelComponent in LevelComponents:
@@ -256,6 +253,7 @@ class Button(HUD, Object):
         # 상속된 변수들
         HUD.__init__(self)
         Object.__init__(self, Image)
+        self.pressed = False
 
     def update_rect_info(self):
         self.Rect.x = self.Xpos
