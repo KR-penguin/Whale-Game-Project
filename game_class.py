@@ -25,6 +25,8 @@ class Object:
       self.Rect = self.Image.get_rect()
       self.Mask = pygame.mask.from_surface(self.Image)
 
+
+
 class HUD:
     def __init__(self):
         self.Xpos = 0
@@ -56,10 +58,7 @@ class GameModeBase:
         else:
             return False
 
-        if A.Mask.overlap(B.Mask, (self.offset_x, self.offset_y)):
-            return True
-        else:
-            return False
+
 
 class BasicAnimation():
     def __init__(self, MaxFrame):
@@ -177,7 +176,6 @@ class Character(DynamicObject, HighQualityAnimation):
           self.ToYpos = -self.Gravity
           if (self.Gravity < 55.6): # 최대 중력
             self.Gravity += GameModeBase.GravityAcceleration
-          self.change_status("Fall")
 
         elif (self.Status == "Jump"):
           if (self.ToYpos <= 0):
@@ -228,23 +226,22 @@ class Character(DynamicObject, HighQualityAnimation):
         for LevelComponent in LevelComponents:
             self.Collision = WhaleGameMode.detect_collision(self, LevelComponent)
 
-            if (self.Collision):
+            if (self.Collision): # Collision이 감지되었을 때
 
                 if (self.Rect.bottom <= LevelComponent.Rect.top): # 위에서 Collision 되었을 때
                     self.bStepOnGround = True
                     self.bBlockByEntity = False
 
                 elif (self.Rect.bottom > LevelComponent.Rect.top): # 옆에서 Collision 되었을 때
-                    if (self.Status != "Jump"): # Jump인 상태가 아닐 때
-                        self.change_status("Fall")
                     self.bStepOnGround = False
                     self.bBlockByEntity = True
 
             else: # 콜리전 감지가 안되었을 때
                 self.bStepOnGround = False
                 self.bBlockByEntity = False
-                if (self.Status != "Jump"): # Jump인 상태가 아닐 때
-                    self.change_status("Fall")
+
+        if (self.bStepOnGround == False):
+            self.change_status("Fall")
 
       # Idle Again
 

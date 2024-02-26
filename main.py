@@ -95,7 +95,7 @@ Ground = game_class.StaticObject(GroundImage)  # Static Object
 MouseCursor = game_class.MouseInfo()
 
 Entities = [Player, JumpBlock, Ground, GameBackground] # 이 게임의 Entity 리스트
-LevelComponents = [JumpBlock, Ground]
+LevelComponents = [Ground, JumpBlock]
 
 # --- begin setup ---
 
@@ -124,6 +124,8 @@ pygame.key.set_repeat(10)
 
 while Running:
     DeltaTime = Clock.tick(60)
+
+    print(Player.Status)
 
     # update 하는 부분 {
     Player.update_movement(LevelComponents, WhaleGameModeBase, Ground, DeltaTime)
