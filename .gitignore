@@ -1,5 +1,4 @@
-./"__pycache__"
-./".buildozer"
-./".vscode"
-./"bin"
-./"buildozer.spec"
+./__pycache__
+./.buildozer
+./.vscode
+./bin

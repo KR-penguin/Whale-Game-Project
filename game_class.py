@@ -14,6 +14,11 @@ class Object:
         self.Xpos = 0
         self.Ypos = 0
         self.Mask = pygame.mask.from_surface(self.Image)
+    
+    def update_image(self, NewImage):
+        self.Image = NewImage
+        self.Rect = self.Image.get_rect()
+        self.Mask = pygame.mask.from_surface(self.Image)
 
     def update_image(self, NewImage):
       self.Image = NewImage
@@ -45,13 +50,16 @@ class GameModeBase:
     def detect_collision(self, A, B):
         self.offset_x = A.Xpos - B.Xpos
         self.offset_y = A.Ypos - B.Ypos
-
+        
         if A.Mask.overlap(B.Mask, (self.offset_x, self.offset_y)):
             return True
         else:
             return False
 
-
+        if A.Mask.overlap(B.Mask, (self.offset_x, self.offset_y)):
+            return True
+        else:
+            return False
 
 class BasicAnimation():
     def __init__(self, MaxFrame):
@@ -153,36 +161,31 @@ class Character(DynamicObject, HighQualityAnimation):
 
     def __init__(self, Image, Speed, GameModeBase : GameModeBase):
         DynamicObject.__init__(self, Image)
-        HighQualityAnimation.__init__(self, [8, 8, 8, 2, 2]) # HighQualityAnimation 참고
+        HighQualityAnimation.__init__(self, [8, 8, 2, 2]) # HighQualityAnimation 참고
         self.Speed = Speed
-        self.bFalling = True
         self.Gravity = 0
 
         self.JumpValue = 1
         self.MaxJumpVelocity = GameModeBase.GameScreenHeight / 270
         self.bStepOnGround = None # boolean
+        self.bBlockByEntity = None # boolean
 
-    def update_movement(self, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
+    def update_movement(self, LevelComponents : typing.List, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
         super().update_movement(DeltaTime)
 
-        self.ToXpos = math.trunc(self.ToXpos)
-        if (self.bFalling == True):
+        if (self.Status == "Fall"):
           self.ToYpos = -self.Gravity
           if (self.Gravity < 55.6): # 최대 중력
             self.Gravity += GameModeBase.GravityAcceleration
-          self.change_status("Falling")
-
-          if ((self.Ypos + self.Rect.height) >= (Ground.Ypos - Ground.Rect.height * 0.1)): # 땅에 닿였다면
-            self.ToYpos = 0
-            self.JumpValue = 1
-            self.bFalling = False
-            self.change_status("Idle")
+          self.change_status("Fall")
 
         elif (self.Status == "Jump"):
           if (self.ToYpos <= 0):
             self.jump_stop()
           else:
             self.ToYpos -= 0.25
+          
+        self.update_collision(LevelComponents, GameModeBase)
 
     def move(self, Direction : str, GameBackground :  Background):
 
@@ -209,7 +212,7 @@ class Character(DynamicObject, HighQualityAnimation):
 
     def jump_stop(self):
         self.Gravity = 0
-        self.change_status("Falling")
+        self.change_status("Fall")
 
     def update_animation(self):
       super().update_animation()
@@ -245,7 +248,11 @@ class Character(DynamicObject, HighQualityAnimation):
 
       # Idle Again
 
-
+    def update_collision(self, LevelComponents : typing.List, WhaleGameMode : GameModeBase):
+        self.Collision = False
+        # Collision 판단 (감지)
+        for LevelComponent in LevelComponents:
+            self.Collision = WhaleGameMode.detect_collision(self, LevelComponent)
 
 class Button(HUD, Object):
 

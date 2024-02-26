@@ -32,7 +32,7 @@ for i in range(8):
 for i in range(8):
     image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
+    image = pygame.transform.scale(image, (ScreenHeight // 6, ScreenHeight // 6))
     PlayerImage[1].append(image)
 
 # Jump Images
@@ -42,9 +42,9 @@ for i in range(2):
     image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
     PlayerImage[2].append(image)
 
-# Falling Images
+# Fall Images
 for i in range(2):
-    image_path = BasicImagePath + "test_player/test_player_falling_" + str(i) + ".png"
+    image_path = BasicImagePath + "test_player/test_player_fall_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
     image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
     PlayerImage[3].append(image)
@@ -94,7 +94,8 @@ JumpBlock = game_class.StaticObject(JumpBlockImage)  # Static Object
 Ground = game_class.StaticObject(GroundImage)  # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, JumpBlock, Ground]  # 이 게임의 Entity 리스트
+Entities = [Player, JumpBlock, Ground, GameBackground] # 이 게임의 Entity 리스트
+LevelComponents = [JumpBlock, Ground]
 
 # --- begin setup ---
 
@@ -118,9 +119,6 @@ JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Rect.height / 2
 Ground.Xpos = ScreenWidth / 2 - Ground.Rect.width / 2
 Ground.Ypos = (GameBackground.Ypos + GameBackground.Rect.height) - Ground.Rect.height
 
-GameCamera.Rect.x = 100
-GameCamera.Rect.y = 100
-
 # --- main loop ---
 pygame.key.set_repeat(10)
 
@@ -128,8 +126,8 @@ while Running:
     DeltaTime = Clock.tick(60)
 
     # update 하는 부분 {
-    Player.update_movement(WhaleGameModeBase, Ground, DeltaTime)
-    Player.Image = PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]]
+    Player.update_movement(LevelComponents, WhaleGameModeBase, Ground, DeltaTime)
+    Player.update_image(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]])
     Player.update_animation()
     GameBackground.update_animation()
     # }
@@ -160,7 +158,6 @@ while Running:
         Player.jump_start()
 
     # --- draw objects on screen ---
-    GameBackground.Rect = GameCamera.update_rect_info(GameBackground)
     GameCamera.update_all_entities(Entities)
     GameCamera.follow_target(Player, GameBackground, WhaleGameModeBase)
     draw_scence(SceneValue)
