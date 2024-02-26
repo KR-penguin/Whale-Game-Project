@@ -20,7 +20,10 @@ class Object:
         self.Rect = self.Image.get_rect()
         self.Mask = pygame.mask.from_surface(self.Image)
 
-
+    def update_image(self, NewImage):
+      self.Image = NewImage
+      self.Rect = self.Image.get_rect()
+      self.Mask = pygame.mask.from_surface(self.Image)
 
 class HUD:
     def __init__(self):
@@ -47,6 +50,11 @@ class GameModeBase:
     def detect_collision(self, A, B):
         self.offset_x = A.Xpos - B.Xpos
         self.offset_y = A.Ypos - B.Ypos
+        
+        if A.Mask.overlap(B.Mask, (self.offset_x, self.offset_y)):
+            return True
+        else:
+            return False
 
         if A.Mask.overlap(B.Mask, (self.offset_x, self.offset_y)):
             return True
@@ -81,27 +89,27 @@ class HighQualityAnimation():
         self.Temp += 0.1
 
         if (self.Status == "Idle"):
-          if(self.AnimationFrame[1] >= self.AnimationTotalFrame[0] - 1): # Animation Frame이 Animation Max Frame의 첫번째 index(Idle 애니메이션의 Max Frame)과 같거나 더 클때 (Animation이 끝났을 때)
+          if (self.AnimationFrame[1] >= self.AnimationTotalFrame[0] - 1): # Animation Frame이 Animation Max Frame의 첫번째 index(Idle 애니메이션의 Max Frame)과 같거나 더 클때 (Animation이 끝났을 때)
             self.AnimationFrame[1] = 0 # Animation Frame을 0으로 초기화함.
             self.Temp = 0
           else:
             self.AnimationFrame = [0, math.floor(self.Temp)]
 
         elif (self.Status == "Run"):
-          if(self.AnimationFrame[1] >= self.AnimationTotalFrame[1] - 1): # Animation Frame이 8과 같거나 더 클때 (Animation이 끝났을 때)
+          if (self.AnimationFrame[1] >= self.AnimationTotalFrame[1] - 1): # Animation Frame이 8과 같거나 더 클때 (Animation이 끝났을 때)
             self.AnimationFrame[1] = 0 # Animation Frame을 0으로 초기화함.
             self.Temp = 0
           else:
             self.AnimationFrame = [1, math.floor(self.Temp)]
 
         elif (self.Status == "Jump"):
-          if(self.AnimationFrame[1] >= self.AnimationTotalFrame[2] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
+          if (self.AnimationFrame[1] >= self.AnimationTotalFrame[2] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
             self.AnimationFrame[1] = self.AnimationTotalFrame[2] - 1
           else: # Animation Frame을 마지막 frame으로 초기화함. 
             self.AnimationFrame = [2, math.floor(self.Temp)]
 
         elif (self.Status == "Fall"):
-          if(self.AnimationFrame[1] >= self.AnimationTotalFrame[3] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
+          if (self.AnimationFrame[1] >= self.AnimationTotalFrame[3] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
             self.AnimationFrame[1] = self.AnimationTotalFrame[3] - 1
           else: # Animation Frame을 마지막 frame으로 초기화함.
             self.AnimationFrame = [3, math.floor(self.Temp)]
@@ -180,7 +188,7 @@ class Character(DynamicObject, HighQualityAnimation):
         self.update_collision(LevelComponents, GameModeBase)
 
     def move(self, Direction : str, GameBackground :  Background):
-  
+
         if (Direction == "Right"):
           self.change_status("Run")
           self.Direction = "Right"
@@ -203,19 +211,42 @@ class Character(DynamicObject, HighQualityAnimation):
           self.ToYpos = self.MaxJumpVelocity
 
     def jump_stop(self):
-        self.change_status("Fall")
         self.Gravity = 0
+        self.change_status("Fall")
 
     def update_animation(self):
       super().update_animation()
-      
+
        # Animation Filp
       if (self.Direction == "Right"):
           self.Image = pygame.transform.flip(self.Image, True, False)
 
+    def update_collision(self, LevelComponents : typing.List, WhaleGameMode : GameModeBase):
+
+        self.Collision = False
+        # Collision 판단 (감지)
+        for LevelComponent in LevelComponents:
+            self.Collision = WhaleGameMode.detect_collision(self, LevelComponent)
+
+            if (self.Collision):
+
+                if (self.Rect.bottom <= LevelComponent.Rect.top): # 위에서 Collision 되었을 때
+                    self.bStepOnGround = True
+                    self.bBlockByEntity = False
+
+                elif (self.Rect.bottom > LevelComponent.Rect.top): # 옆에서 Collision 되었을 때
+                    if (self.Status != "Jump"): # Jump인 상태가 아닐 때
+                        self.change_status("Fall")
+                    self.bStepOnGround = False
+                    self.bBlockByEntity = True
+
+            else: # 콜리전 감지가 안되었을 때
+                self.bStepOnGround = False
+                self.bBlockByEntity = False
+                if (self.Status != "Jump"): # Jump인 상태가 아닐 때
+                    self.change_status("Fall")
+
       # Idle Again
-      if (self.ToXpos == 0) and (self.Status == "Running"):
-          self.change_status("Idle")
 
     def update_collision(self, LevelComponents : typing.List, WhaleGameMode : GameModeBase):
         self.Collision = False
@@ -229,6 +260,7 @@ class Button(HUD, Object):
         # 상속된 변수들
         HUD.__init__(self)
         Object.__init__(self, Image)
+        self.pressed = False
 
     def update_rect_info(self):
         self.Rect.x = self.Xpos
