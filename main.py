@@ -1,6 +1,7 @@
 import os
 import pygame
 import game_class
+import math
 
 pygame.init()
 
@@ -77,8 +78,8 @@ def draw_scence(scene: int):
         Screen.blit(JumpBlock.Image, (JumpBlock.Rect.x, JumpBlock.Rect.y))
         Screen.blit(Player.Image, (Player.Rect.x, Player.Rect.y))
 
-        Screen.blit(LeftMoveButton.Image, (LeftMoveButton.Xpos, LeftMoveButton.Ypos))
-        Screen.blit(RightMoveButton.Image, (RightMoveButton.Xpos, RightMoveButton.Ypos))
+        Screen.blit(LeftMoveButton.Image, (LeftMoveButton.Rect.x, LeftMoveButton.Rect.y))
+        Screen.blit(RightMoveButton.Image, (RightMoveButton.Rect.x, RightMoveButton.Rect.y))
     pygame.display.update()
 
 
@@ -104,14 +105,10 @@ Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2
 Player.Ypos = ScreenHeight / 2 - Player.Rect.height
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Rect.width / 2
 GameBackground.Ypos = ScreenHeight - GameBackground.Rect.height + ScreenHeight / 8
-LeftMoveButton.Xpos = 0
-LeftMoveButton.Ypos = ScreenHeight - LeftMoveButton.Rect.height
-RightMoveButton.Xpos = ScreenWidth - RightMoveButton.Rect.width
-RightMoveButton.Ypos = ScreenHeight - RightMoveButton.Rect.height
 # 버튼 테스트
-button1 = pygame.Rect(LeftMoveButton.Xpos, ScreenHeight - LeftMoveButton.Rect.height, LeftMoveButton.Rect.width,
+LeftMoveButton.Rect = pygame.Rect(LeftMoveButton.Xpos, ScreenHeight - LeftMoveButton.Rect.height, LeftMoveButton.Rect.width,
                       LeftMoveButton.Rect.height)
-button2 = pygame.Rect(RightMoveButton.Xpos, RightMoveButton.Ypos, RightMoveButton.Rect.width,
+RightMoveButton.Rect = pygame.Rect(RightMoveButton.Xpos, RightMoveButton.Ypos, RightMoveButton.Rect.width,
                       RightMoveButton.Rect.height)
 # 버튼 테스트 끝
 JumpBlock.Xpos = ScreenWidth / 2 - JumpBlock.Rect.width / 2
@@ -128,6 +125,7 @@ while Running:
     print(Player.Status)
 
     # update 하는 부분 {
+    print(Player.Status, math.floor(Player.Temp))
     Player.update_movement(LevelComponents, WhaleGameModeBase, Ground, DeltaTime)
     Player.update_image(PlayerImage[Player.AnimationFrame[0]][Player.AnimationFrame[1]])
     Player.update_animation()
@@ -137,24 +135,30 @@ while Running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             Running = False
+
         elif event.type == pygame.FINGERDOWN:
-            touch_pos = (event.x * Screen.get_width(), event.y * Screen.get_height())
-            if button1.collidepoint(touch_pos):
-                LeftMoveButton.pressed = True
-            elif button2.collidepoint(touch_pos):
-                RightMoveButton.pressed = True
+            TouchPos = (event.x * Screen.get_width(), event.y * Screen.get_height())
+            if LeftMoveButton.Rect.collidepoint(TouchPos):
+                LeftMoveButton.Pressed = True
+            elif RightMoveButton.Rect.collidepoint(TouchPos):
+                RightMoveButton.Pressed = True
+
         elif event.type == pygame.FINGERUP:
-            touch_pos = (event.x * Screen.get_width(), event.y * Screen.get_height())
-            if button1.collidepoint(touch_pos):
-                LeftMoveButton.pressed = False
-            elif button2.collidepoint(touch_pos):
-                RightMoveButton.pressed = False
+            TouchPos = (event.x * Screen.get_width(), event.y * Screen.get_height())
+            if LeftMoveButton.Rect.collidepoint(TouchPos):
+                LeftMoveButton.Pressed = False
+            elif RightMoveButton.Rect.collidepoint(TouchPos):
+                RightMoveButton.Pressed = False
+
+#    if (LeftMoveButton.Pressed == False and RightMoveButton.Pressed == False):
+#        if (Player.Status != "Jump" or Player.Status != "Fall"):
+#            Player.change_status("Idle")
 
     # --- Keyboard binding ---
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_d] or RightMoveButton.pressed:
+    if keys[pygame.K_d] or RightMoveButton.Pressed:
         Player.move("Right", GameBackground)
-    if keys[pygame.K_a] or LeftMoveButton.pressed:
+    if keys[pygame.K_a] or LeftMoveButton.Pressed:
         Player.move("Left", GameBackground)
     if keys[pygame.K_SPACE]:
         Player.jump_start()
