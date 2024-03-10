@@ -21,16 +21,16 @@ class Object:
         self.Mask = pygame.mask.from_surface(self.Image)
 
     def update_image(self, NewImage):
-      self.Image = NewImage
-      self.Rect = self.Image.get_rect()
-      self.Mask = pygame.mask.from_surface(self.Image)
+        self.Image = NewImage
+        self.Rect = self.Image.get_rect()
+        self.Mask = pygame.mask.from_surface(self.Image)
 
 
 
 class HUD:
-    def __init__(self):
-        self.Xpos = 0
-        self.Ypos = 0
+    def __init__(self, Image):
+        self.Image = Image
+        self.Rect = self.Image.get_rect()
 
 
 
@@ -207,12 +207,11 @@ class Character(DynamicObject, HighQualityAnimation):
       if (self.Direction == "Right"):
           self.Image = pygame.transform.flip(self.Image, True, False)
 
-class Button(HUD, Object):
+class Button(HUD):
 
     def __init__(self, Image):
         # 상속된 변수들
-        HUD.__init__(self)
-        Object.__init__(self, Image)
+        super().__init__(Image)
         self.Pressed = False
 
     def update_rect_info(self):
