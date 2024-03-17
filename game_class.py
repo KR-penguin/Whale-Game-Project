@@ -90,24 +90,9 @@ class HighQualityAnimation():
             else:
                 self.AnimationFrame = [1, math.floor(self.Temp)]
 
-        elif (self.Status == "Jump"):
-            if (math.floor(self.Temp) >= self.AnimationTotalFrame[2] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
-                self.AnimationFrame[1] = self.AnimationTotalFrame[2] - 1
-            else: # Animation Frame을 마지막 frame으로 초기화함. 
-                self.AnimationFrame = [2, math.floor(self.Temp)]
-
-        elif (self.Status == "Fall"):
-            if (math.floor(self.Temp) >= self.AnimationTotalFrame[3] - 1): # Animation Frame이 2과 같거나 더 클때 (Animation이 끝났을 때)
-                self.AnimationFrame[1] = self.AnimationTotalFrame[3] - 1
-            else: # Animation Frame을 마지막 frame으로 초기화함.
-                self.AnimationFrame = [3, math.floor(self.Temp)]
-
     def change_status(self, NewStatus : str):
         if (self.Status == NewStatus):
             return
-        elif ((NewStatus == "Run" or NewStatus == "Idle") and (self.Status == "Jump" or self.Status == "Fall")):
-            # Jump거나 Fall인 상태에서는 Run_Right나 Run_Left 상태로 바꾸지 못하도록 함
-            return  
         self.Status = NewStatus
         self.AnimationFrame[1] = 0
         self.Temp = 0
@@ -126,6 +111,7 @@ class DynamicObject(Object):
         self.Xpos += self.ToXpos * DeltaTime
         self.ToXpos *= self.FrictionalForce
         self.Ypos += -1 * self.ToYpos * DeltaTime
+        self.ToYpos *= self.FrictionalForce
 
     def update_image(self, Image):
         self.Image = Image
@@ -150,59 +136,42 @@ class Character(DynamicObject, HighQualityAnimation):
 
     def __init__(self, Image, Speed, GameModeBase : GameModeBase):
         DynamicObject.__init__(self, Image)
-        HighQualityAnimation.__init__(self, [8, 8, 2, 2]) # HighQualityAnimation 참고
+        HighQualityAnimation.__init__(self, [8, 8]) # HighQualityAnimation 참고
         self.Speed = Speed
-        self.Gravity = 0
-
-        self.JumpValue = 1
-        self.MaxJumpVelocity = GameModeBase.GameScreenHeight / 270
-        self.bStepOnGround = None # boolean
-        self.bBlockByEntity = None # boolean
-
-    def update_movement(self, LevelComponents : typing.List, GameModeBase : GameModeBase, Ground : StaticObject, DeltaTime):
-        super().update_movement(DeltaTime)
-
-        if (self.Status == "Fall"):
-          self.ToYpos = -self.Gravity
-          if (self.Gravity < 55.6): # 최대 중력
-            self.Gravity += GameModeBase.GravityAcceleration
-
-        elif (self.Status == "Jump"):
-          if (self.ToYpos <= 0):
-            self.jump_stop()
-          else:
-            self.ToYpos -= 0.25
 
     def move(self, Direction : str, GameBackground :  Background):
 
         if (Direction == "Right"):
-          self.change_status("Run")
-          self.Direction = "Right"
-          if (self.Xpos > GameBackground.Xpos + (GameBackground.Rect.width - GameBackground.Rect.width * 0.1)): # player가 오른쪽 끝까지 이동했을 때
-            # GameBackground.Rect.width - GameBackground.Rect.width * 0.1   ==> 화면 오른쪽 끝보다 조금 왼쪽
-            return
-          self.ToXpos = self.Speed
+            self.change_status("Run")
+            self.Direction = "Right"
+            if (self.Xpos > GameBackground.Xpos + (GameBackground.Rect.width - GameBackground.Rect.width * 0.1)): # player가 오른쪽 끝까지 이동했을 때
+              # GameBackground.Rect.width - GameBackground.Rect.width * 0.1   ==> 화면 오른쪽 끝보다 조금 왼쪽
+              return
+            self.ToXpos = self.Speed
 
         elif (Direction == "Left"):
-          self.change_status("Run")
-          self.Direction = "Left"
-          if (self.Xpos < (GameBackground.Xpos + GameBackground.Rect.width * 0.1)): # player가 왼쪽 끝까지 이동했을 때
-            return
-          self.ToXpos = -1 * self.Speed
+            self.change_status("Run")
+            self.Direction = "Left"
+            if (self.Xpos < (GameBackground.Xpos + GameBackground.Rect.width * 0.1)): # player가 왼쪽 끝까지 이동했을 때
+              return
+            self.ToXpos = -1 * self.Speed
 
-    def jump_start(self):
-        if (self.JumpValue >= 1):
-          self.JumpValue -= 1
-          self.change_status("Jump")
-          self.ToYpos = self.MaxJumpVelocity
+        elif (Direction == "Up"):
+            self.change_status("Run")
+            self.Direction = "Up"
+            if (self.Ypos < (GameBackground.Ypos + GameBackground.Rect.height * 0.1)): # player가 왼쪽 끝까지 이동했을 때
+              return
+            self.ToYpos = self.Speed
 
-    def jump_stop(self):
-        self.Gravity = 0
-        self.change_status("Fall")
+        elif (Direction == "Down"):
+            self.change_status("Run")
+            self.Direction = "Down"
+            if (self.Ypos > (GameBackground.Rect.bottom - GameBackground.Rect.height * 0.1)): # player가 왼쪽 끝까지 이동했을 때
+              return
+            self.ToYpos = -1 * self.Speed
 
     def update_animation(self):
       super().update_animation()
-
        # Animation Filp
       if (self.Direction == "Right"):
           self.Image = pygame.transform.flip(self.Image, True, False)
