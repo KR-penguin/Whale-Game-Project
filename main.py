@@ -1,7 +1,6 @@
 import os
 import pygame
 import game_class
-import math
 
 pygame.init()
 
