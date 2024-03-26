@@ -38,10 +38,6 @@ for i in range(8):
 BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg").convert_alpha()
 BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth * 3, ScreenHeight * 3))
 
-
-JumpBlockImage = pygame.image.load(BasicImagePath + "jump block.png").convert_alpha()
-JumpBlockImage = pygame.transform.scale(JumpBlockImage, (ScreenHeight / 3, ScreenHeight / 3))
-
 GroundImage = pygame.image.load(BasicImagePath + "Ground.png").convert_alpha()
 GroundImage = pygame.transform.scale(GroundImage, (ScreenWidth * 10, ScreenHeight / 2.5))
 
@@ -54,7 +50,6 @@ def draw_scence(scene: int):
 
         Screen.blit(GameBackground.Image, (GameBackground.Rect.x, GameBackground.Rect.y))
         Screen.blit(Ground.Image, (Ground.Rect.x, Ground.Rect.y))
-        Screen.blit(JumpBlock.Image, (JumpBlock.Rect.x, JumpBlock.Rect.y))
         Screen.blit(Player.Image, (Player.Rect.x, Player.Rect.y))
     pygame.display.update()
 
@@ -65,12 +60,10 @@ WhaleGameModeBase = game_class.GameModeBase(Screen, "TargetXY")
 GameCamera = game_class.Camera(WhaleGameModeBase)
 Player = game_class.Character(PlayerImage[0][0], 1, WhaleGameModeBase)  # Dynamic Object
 GameBackground = game_class.Background(BackgroundImage)  # Static Object
-JumpBlock = game_class.StaticObject(JumpBlockImage)  # Static Object
 Ground = game_class.StaticObject(GroundImage)  # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, JumpBlock, Ground, GameBackground] # 이 게임의 Entity 리스트
-LevelComponents = [Ground, JumpBlock]
+Entities = [Player, Ground, GameBackground] # 이 게임의 Entity 리스트
 
 # --- begin setup ---
 
@@ -79,10 +72,6 @@ Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2
 Player.Ypos = ScreenHeight / 2 - Player.Rect.height
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Rect.width / 2
 GameBackground.Ypos = ScreenHeight - GameBackground.Rect.height + ScreenHeight / 8
-
-# 버튼 테스트 끝
-JumpBlock.Xpos = ScreenWidth / 2 - JumpBlock.Rect.width / 2
-JumpBlock.Ypos = ScreenHeight / 2 - JumpBlock.Rect.height / 2
 Ground.Xpos = ScreenWidth / 2 - Ground.Rect.width / 2
 Ground.Ypos = (GameBackground.Ypos + GameBackground.Rect.height) - Ground.Rect.height
 

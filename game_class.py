@@ -68,7 +68,7 @@ class BasicAnimation():
 class HighQualityAnimation():
     def __init__(self, MaxFrame : typing.List[int]):
         self.Temp = 0
-        self.Status = "Idle" # Status에는 Idle, Run_Right, Run_Left, Jump 등이 있다.
+        self.Status = "Idle" # Status에는 Idle, Run등이 있다.
         self.AnimationFrame = [0, 0] # 첫번째 index는 status를 나타내고, 두번째 index는 현재 Animation의 frame을 나타냄.
         self.AnimationTotalFrame = MaxFrame # AnimationTotalFrame은 list로써 첫번째 index는 첫번째 status(idle)의 총 frame 개수를 나타낸다.
         self.Direction = "Left"
