@@ -20,11 +20,6 @@ class Object:
         self.Rect = self.Image.get_rect()
         self.Mask = pygame.mask.from_surface(self.Image)
 
-    def update_image(self, NewImage):
-        self.Image = NewImage
-        self.Rect = self.Image.get_rect()
-        self.Mask = pygame.mask.from_surface(self.Image)
-
 
 
 class HUD:
