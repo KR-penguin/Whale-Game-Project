@@ -45,8 +45,11 @@ def draw_scence(scene: int):
     if (scene == 0):
         Screen.fill((255, 255, 255))
 
-        Screen.blit(GameBackground.Image, (GameBackground.Rect.x, GameBackground.Rect.y))
-        Screen.blit(Player.Image, (Player.Rect.x, Player.Rect.y))
+        PrintImage = pygame.transform.scale(GameBackground.Image, (GameBackground.Image.get_width() * GameCamera.Zoom, GameBackground.Image.get_height() * GameCamera.Zoom))
+        Screen.blit(PrintImage, (GameBackground.Rect.x, GameBackground.Rect.y))
+        PrintImage = pygame.transform.scale(Player.Image, (Player.Image.get_width() * GameCamera.Zoom, Player.Image.get_height() * GameCamera.Zoom))
+        Screen.blit(PrintImage, (Player.Rect.x, Player.Rect.y))
+        
     pygame.display.update()
 
 
@@ -58,7 +61,7 @@ Player = game_class.Character(PlayerImage[0][0], 1, WhaleGameModeBase)  # Dynami
 GameBackground = game_class.Background(BackgroundImage)  # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, Ground, GameBackground] # 이 게임의 Entity 리스트
+Entities = [Player, GameBackground] # 이 게임의 Entity 리스트
 
 # --- begin setup ---
 
@@ -95,6 +98,13 @@ while Running:
         Player.move("Up", GameBackground)
     if keys[pygame.K_s]:
         Player.move("Down", GameBackground)
+    if keys[pygame.K_g]:
+        GameCamera.Zoom += 0.1
+    if keys[pygame.K_h]:
+        if (GameCamera.Zoom - 0.1 > 0.1):
+            GameCamera.Zoom -= 0.1
+
+    print(GameCamera.Zoom)
 
     if int(Player.ToXpos) == 0 and int(Player.ToYpos) == 0:
         Player.change_status("Idle")

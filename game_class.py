@@ -189,6 +189,7 @@ class Camera():
         self.Rect = pygame.Rect(0, 0, GameModeBase.GameScreenWidth, GameModeBase.GameScreenHeight)
         self.Rect.width = GameModeBase.GameScreenWidth
         self.Rect.height = GameModeBase.GameScreenHeight
+        self.Zoom = 1
 
     def update_rect_info(self, entity):  # Camera에 맞게 entity의 좌표를 수정함
         return pygame.Rect(entity.Xpos - self.Rect.x, entity.Ypos - self.Rect.y, entity.Rect.width, entity.Rect.height)
