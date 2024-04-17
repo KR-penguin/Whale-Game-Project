@@ -58,7 +58,7 @@ Player = game_class.Character(PlayerImage[0][0], 1, WhaleGameModeBase)  # Dynami
 GameBackground = game_class.Background(BackgroundImage)  # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, Ground, GameBackground] # 이 게임의 Entity 리스트
+Entities = [Player, GameBackground] # 이 게임의 Entity 리스트
 
 # --- begin setup ---
 
