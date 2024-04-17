@@ -25,19 +25,22 @@ PlayerImage = [[], []]  # Idle, Run
 for i in range(8):
     image_path = BasicImagePath + "test_player/test_player_idle_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 5, ScreenHeight // 5))
+    image = pygame.transform.scale(image, (ScreenHeight / 5, ScreenHeight / 5))
     PlayerImage[0].append(image)
 
 # Run Images
 for i in range(8):
     image_path = BasicImagePath + "test_player/test_player_run_" + str(i) + ".png"
     image = pygame.image.load(image_path).convert_alpha()
-    image = pygame.transform.scale(image, (ScreenHeight // 6, ScreenHeight // 6))
+    image = pygame.transform.scale(image, (ScreenHeight / 6, ScreenHeight / 6))
     PlayerImage[1].append(image)
 
-BackgroundImage = pygame.image.load(BasicImagePath + "test_background.jpg").convert_alpha()
-BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth * 3, ScreenHeight * 3))
+BackgroundImage = pygame.image.load(BasicImagePath + "Background.jpg").convert_alpha()
+BackgroundImage = pygame.transform.scale(BackgroundImage, (ScreenWidth, ScreenWidth))
+BackgroundImage = pygame.transform.rotate(BackgroundImage, 0)
 
+WallBlockImage = pygame.image.load(BasicImagePath + "WallBlock.jpg").convert_alpha()
+WallBlockImage = pygame.transform.scale(WallBlockImage, (ScreenWidth/ 5, ScreenWidth / 5))
 
 # --- functions ---
 
@@ -47,6 +50,7 @@ def draw_scence(scene: int):
 
         Screen.blit(GameBackground.Image, (GameBackground.Rect.x, GameBackground.Rect.y))
         Screen.blit(Player.Image, (Player.Rect.x, Player.Rect.y))
+        Screen.blit(WallBlock.Image, (WallBlock.Rect.x, WallBlock.Rect.y))
     pygame.display.update()
 
 
@@ -54,11 +58,13 @@ def draw_scence(scene: int):
 
 WhaleGameModeBase = game_class.GameModeBase(Screen, "TargetXY")
 GameCamera = game_class.Camera(WhaleGameModeBase)
-Player = game_class.Character(PlayerImage[0][0], 1, WhaleGameModeBase)  # Dynamic Object
-GameBackground = game_class.Background(BackgroundImage)  # Static Object
 MouseCursor = game_class.MouseInfo()
 
-Entities = [Player, GameBackground] # 이 게임의 Entity 리스트
+Player = game_class.Character(PlayerImage[0][0], 1, WhaleGameModeBase)  # Dynamic Object
+GameBackground = game_class.Background(BackgroundImage)  # Static Object
+WallBlock = game_class.StaticObject(WallBlockImage) # Static Object
+
+Entities = [Player, GameBackground, WallBlock] # 이 게임의 Entity 리스트
 
 # --- begin setup ---
 
@@ -67,6 +73,8 @@ Player.Xpos = ScreenWidth / 2 - Player.Rect.width / 2
 Player.Ypos = ScreenHeight / 2 - Player.Rect.height
 GameBackground.Xpos = ScreenWidth / 2 - GameBackground.Rect.width / 2
 GameBackground.Ypos = ScreenHeight - GameBackground.Rect.height + ScreenHeight / 8
+WallBlock.Xpos = ScreenWidth / 2 - WallBlock.Rect.width / 2
+WallBlock.Ypos = ScreenHeight / 2 - WallBlock.Rect.height / 2
 
 # --- main loop ---
 pygame.key.set_repeat(10)
